@@ -6,3 +6,6 @@ pub mod attribute_collection;
 
 #[cfg(feature = "misc_attributes")]
 pub mod misc_attributes;
+
+#[cfg(feature = "dom_attributes")]
+pub mod dom_attributes;

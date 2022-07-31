@@ -5,7 +5,9 @@ edition = "2021"
 
 [dependencies]
 bevy_reflect = "0.8.0"
+js-sys = "0.3.59"
 strum = {version = "0.24.1", features = ["strum_macros", "derive"]}
+wasm-bindgen = "0.2.82"
 web-sys = { version = "0.3.59", features = ["Element", "console"]}
 yew = "0.19.3"
 
@@ -13,9 +15,11 @@ yew = "0.19.3"
 aria_attributes = []
 attribute_collection = []
 misc_attributes = []
+dom_attributes = []
 full = [
     "aria_attributes",
     "attribute_collection",
     "misc_attributes",
+    "dom_attributes"
 ]
-default = ["aria_attributes", "attribute_collection", "misc_attributes"]
+default = ["aria_attributes", "attribute_collection", "misc_attributes", "dom_attributes"]
