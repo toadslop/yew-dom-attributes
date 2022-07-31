@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 
-use web_sys::{console, Element};
+use web_sys::Element;
 use yew::NodeRef;
 
-use crate::attribute_collection::AttributeCollection;
+use crate::attribute_collection::{AttributeCollection, SetAttributeError};
 
 /// A struct representing an artibrary set of HTML attributes to be passed to the underlying component.
 /// Should be used as a prop for a Yew component.
@@ -38,15 +38,16 @@ impl From<HashMap<String, Option<String>>> for MiscAttrs {
 impl AttributeCollection for MiscAttrs {
     /// Call the render method within the rendered method of a component, passing in the NodeRef of the component.
     /// This will then inject the props.
-    fn inject(&self, node_ref: &NodeRef) {
+    fn inject(&self, node_ref: &NodeRef) -> Result<(), SetAttributeError> {
         if let Some(elem) = node_ref.cast::<Element>() {
             for (key, maybe_val) in &self.0 {
                 let val = maybe_val.clone().unwrap_or("".to_string());
                 match elem.set_attribute(&key, &val) {
                     Ok(()) => (),
-                    Err(_msg) => console::log_1(&"Failed to set attribute".into()),
+                    Err(_msg) => return Err(SetAttributeError),
                 }
             }
         }
+        Ok(())
     }
 }

@@ -1,13 +1,16 @@
 use bevy_reflect::{FromReflect, Reflect, Struct, ValueInfo};
 use strum::Display;
-use web_sys::{console, Element};
+use web_sys::Element;
 use yew::{NodeRef, Properties};
 
-use crate::attribute_collection::{
-    convert_to_string, default_to_html_val_string, AttributeCollection,
+use crate::{
+    attribute_collection::{
+        convert_to_string, default_to_html_val_string, AttributeCollection, SetAttributeError,
+    },
+    attribute_holder::Attribute,
 };
 
-#[derive(Debug, PartialEq, Clone, Reflect, Display, FromReflect)]
+#[derive(Debug, PartialEq, Clone, Reflect, Display, FromReflect, Hash, Eq)]
 #[strum(serialize_all = "kebab-case")]
 pub enum AriaAutocomplete {
     None,
@@ -113,6 +116,28 @@ pub enum AriaSort {
     Ascending,
     Descending,
     Other,
+}
+
+#[derive(Debug, PartialEq, Clone, Display, Hash, Eq)]
+#[strum(serialize_all = "kebab-case")]
+pub enum AriaAttributes2 {
+    AriaActivedescendant(String),
+    AriaAtomic(bool),
+    AriaAutocomplete(AriaAutocomplete),
+}
+
+impl Attribute for AriaAttributes2 {
+    fn get_key(&self) -> String {
+        self.to_string()
+    }
+
+    fn get_val(&self) -> Option<String> {
+        match self {
+            AriaAttributes2::AriaActivedescendant(val) => Some(val.to_string()),
+            AriaAttributes2::AriaAtomic(val) => Some(val.to_string()),
+            AriaAttributes2::AriaAutocomplete(val) => Some(val.to_string()),
+        }
+    }
 }
 
 #[derive(Debug, Properties, PartialEq, Clone, Reflect, FromReflect, Default)]
@@ -355,11 +380,11 @@ pub struct AriaAttributes {
 }
 
 impl AttributeCollection for AriaAttributes {
-    fn inject(&self, node_ref: &NodeRef) {
+    fn inject(&self, node_ref: &NodeRef) -> Result<(), SetAttributeError> {
         if let Some(elem) = node_ref.cast::<Element>() {
             for (i, value) in self.iter_fields().enumerate() {
                 let field_name = self.name_at(i).unwrap().replace("_", "-");
-                console::log_1(&field_name.clone().into());
+                //console::log_1(&field_name.clone().into());
                 match value.get_type_info() {
                     bevy_reflect::TypeInfo::Struct(_) => todo!(),
                     bevy_reflect::TypeInfo::TupleStruct(_) => todo!(),
@@ -368,19 +393,20 @@ impl AttributeCollection for AriaAttributes {
                     bevy_reflect::TypeInfo::Array(_) => todo!(),
                     bevy_reflect::TypeInfo::Map(_) => todo!(),
                     bevy_reflect::TypeInfo::Value(value_info) => {
-                        let name = value_info.type_name();
-                        let html_attr_val = aria_to_html_val_string(value_info, value);
+                        // let name = value_info.type_name();
+                        let html_attr_val = aria_to_html_val_string(&value_info, value);
                         if let Some(attr_val) = html_attr_val {
                             elem.set_attribute(field_name.as_str(), attr_val.as_str())
                                 .unwrap();
                         }
 
-                        console::log_1(&name.into());
+                        //console::log_1(&name.into());
                     }
                     bevy_reflect::TypeInfo::Dynamic(_) => todo!(),
                 }
             }
         }
+        Ok(())
     }
 }
 

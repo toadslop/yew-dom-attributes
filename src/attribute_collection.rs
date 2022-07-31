@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::fmt::{Display, Formatter};
 
 use bevy_reflect::{Reflect, ValueInfo};
 use yew::NodeRef;
@@ -7,7 +7,16 @@ use yew::NodeRef;
 pub trait AttributeCollection {
     /// The inject function takes a NodeRef in which to inject the fields of the struct as html attributes.
     /// You'll need to convert the NodeRef to an Element and use set_attribute.
-    fn inject(&self, node_ref: &NodeRef);
+    fn inject(&self, node_ref: &NodeRef) -> Result<(), SetAttributeError>;
+}
+
+#[derive(Debug, Clone)]
+pub struct SetAttributeError;
+
+impl Display for SetAttributeError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Failed to insert attribute to the DOM")
+    }
 }
 
 pub fn default_to_html_val_string(value_info: &ValueInfo, value: &dyn Reflect) -> Option<String> {

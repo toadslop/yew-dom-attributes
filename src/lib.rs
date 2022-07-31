@@ -6,3 +6,7 @@ pub mod attribute_collection;
 
 #[cfg(feature = "misc_attributes")]
 pub mod misc_attributes;
+
+pub mod attribute_holder;
+
+pub mod button_html_attributes;
