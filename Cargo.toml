@@ -8,3 +8,14 @@ bevy_reflect = "0.8.0"
 strum = {version = "0.24.1", features = ["strum_macros", "derive"]}
 web-sys = { version = "0.3.59", features = ["Element", "console"]}
 yew = "0.19.3"
+
+[features]
+aria_attributes = []
+attribute_collection = []
+misc_attributes = []
+full = [
+    "aria_attributes",
+    "attribute_collection",
+    "misc_attributes",
+]
+default = ["aria_attributes", "attribute_collection", "misc_attributes"]
