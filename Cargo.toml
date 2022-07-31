@@ -1,0 +1,10 @@
+[package]
+name = "yew-dom-attributes"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bevy_reflect = "0.8.0"
+strum = {version = "0.24.1", features = ["strum_macros", "derive"]}
+web-sys = { version = "0.3.59", features = ["Element", "console"]}
+yew = "0.19.3"
