@@ -83,6 +83,38 @@ pub enum AriaOrientation {
     Vertical,
 }
 
+type AriaPressed = AriaChecked;
+
+#[derive(Debug, PartialEq, Clone, Reflect, Display, FromReflect)]
+#[strum(serialize_all = "lowercase")]
+pub enum AriaRelevant {
+    Additions,
+    #[strum(serialize = "additions removals")]
+    AdditionsRemovals,
+    #[strum(serialize = "additions text")]
+    AdditionsText,
+    All,
+    Removals,
+    #[strum(serialize = "removals additions")]
+    RemovalsAdditions,
+    #[strum(serialize = "removals text")]
+    RemovalsText,
+    Text,
+    #[strum(serialize = "text additions")]
+    TextAdditions,
+    #[strum(serialize = "text removals")]
+    TextRemovals,
+}
+
+#[derive(Debug, PartialEq, Clone, Reflect, Display, FromReflect)]
+#[strum(serialize_all = "kebab-case")]
+pub enum AriaSort {
+    None,
+    Ascending,
+    Descending,
+    Other,
+}
+
 #[derive(Debug, Properties, PartialEq, Clone, Reflect, FromReflect, Default)]
 pub struct AriaAttributes {
     /// Identifies the currently active element when DOM focus is on a composite widget, textbox, group, or application.
@@ -204,7 +236,7 @@ pub struct AriaAttributes {
     pub aria_label: Option<String>,
 
     /// Identifies the element (or elements) that labels the current element.
-    /// @see [aria_describedby](`AriaAttributes::aria_describedby`).
+    /// see [aria_describedby](`AriaAttributes::aria_describedby`).
     #[prop_or_default]
     pub aria_labelledby: Option<String>,
 
@@ -230,78 +262,96 @@ pub struct AriaAttributes {
     pub aria_multiselectable: Option<bool>,
 
     /// Indicates whether the element's orientation is horizontal, vertical, or unknown/ambiguous.
+    #[prop_or_default]
     pub aria_orientation: Option<AriaOrientation>,
 
     /// Identifies an element (or elements) in order to define a visual, functional, or contextual parent/child relationship
     /// between DOM elements where the DOM hierarchy cannot be used to represent the relationship.
     /// see [aria_controls](`AriaAttributes::aria_controls`).
-    pub aria_owns: Option<String>, // /**
-                                   //  * Defines a short hint (a word or short phrase) intended to aid the user with data entry when the control has no value.
-                                   //  * A hint could be a sample value or a brief description of the expected format.
-                                   //  */
-                                   // 'aria-placeholder'?: string | undefined;
-                                   // /**
-                                   //  * Defines an element's number or position in the current set of listitems or treeitems. Not required if all elements in the set are present in the DOM.
-                                   //  * @see aria-setsize.
-                                   //  */
-                                   // 'aria-posinset'?: number | undefined;
-                                   // /**
-                                   //  * Indicates the current "pressed" state of toggle buttons.
-                                   //  * @see aria-checked @see aria-selected.
-                                   //  */
-                                   // 'aria-pressed'?: boolean | 'false' | 'mixed' | 'true' | undefined;
-                                   // /**
-                                   //  * Indicates that the element is not editable, but is otherwise operable.
-                                   //  * @see aria-disabled.
-                                   //  */
-                                   // 'aria-readonly'?: Booleanish | undefined;
-                                   // /**
-                                   //  * Indicates what notifications the user agent will trigger when the accessibility tree within a live region is modified.
-                                   //  * @see aria-atomic.
-                                   //  */
-                                   // 'aria-relevant'?: 'additions' | 'additions removals' | 'additions text' | 'all' | 'removals' | 'removals additions' | 'removals text' | 'text' | 'text additions' | 'text removals' | undefined;
-                                   // /** Indicates that user input is required on the element before a form may be submitted. */
-                                   // 'aria-required'?: Booleanish | undefined;
-                                   // /** Defines a human-readable, author-localized description for the role of an element. */
-                                   // 'aria-roledescription'?: string | undefined;
-                                   // /**
-                                   //  * Defines the total number of rows in a table, grid, or treegrid.
-                                   //  * @see aria-rowindex.
-                                   //  */
-                                   // 'aria-rowcount'?: number | undefined;
-                                   // /**
-                                   //  * Defines an element's row index or position with respect to the total number of rows within a table, grid, or treegrid.
-                                   //  * @see aria-rowcount @see aria-rowspan.
-                                   //  */
-                                   // 'aria-rowindex'?: number | undefined;
-                                   // /**
-                                   //  * Defines the number of rows spanned by a cell or gridcell within a table, grid, or treegrid.
-                                   //  * @see aria-rowindex @see aria-colspan.
-                                   //  */
-                                   // 'aria-rowspan'?: number | undefined;
-                                   // /**
-                                   //  * Indicates the current "selected" state of various widgets.
-                                   //  * @see aria-checked @see aria-pressed.
-                                   //  */
-                                   // 'aria-selected'?: Booleanish | undefined;
-                                   // /**
-                                   //  * Defines the number of items in the current set of listitems or treeitems. Not required if all elements in the set are present in the DOM.
-                                   //  * @see aria-posinset.
-                                   //  */
-                                   // 'aria-setsize'?: number | undefined;
-                                   // /** Indicates if items in a table or grid are sorted in ascending or descending order. */
-                                   // 'aria-sort'?: 'none' | 'ascending' | 'descending' | 'other' | undefined;
-                                   // /** Defines the maximum allowed value for a range widget. */
-                                   // 'aria-valuemax'?: number | undefined;
-                                   // /** Defines the minimum allowed value for a range widget. */
-                                   // 'aria-valuemin'?: number | undefined;
-                                   // /**
-                                   //  * Defines the current value for a range widget.
-                                   //  * @see aria-valuetext.
-                                   //  */
-                                   // 'aria-valuenow'?: number | undefined;
-                                   // /** Defines the human readable text alternative of aria-valuenow for a range widget. */
-                                   // 'aria-valuetext'?: string | undefined;
+    #[prop_or_default]
+    pub aria_owns: Option<String>,
+
+    /// Defines a short hint (a word or short phrase) intended to aid the user with data entry when the control has no value.
+    /// A hint could be a sample value or a brief description of the expected format.
+    #[prop_or_default]
+    pub aria_placeholder: Option<String>,
+
+    /// Defines an element's number or position in the current set of listitems or treeitems. Not required if all elements
+    /// in the set are present in the DOM.
+    ///
+    /// see [aria_setsize](`AriaAttributes::aria_setsize`)
+    #[prop_or_default]
+    pub aria_posinset: Option<u64>,
+
+    /// Indicates the current "pressed" state of toggle buttons.
+    ///
+    /// [aria_checked](`AriaAttributes::aria_checked`) see [aria_selected](`AriaAttributes::aria_selected`).
+    #[prop_or_default]
+    pub aria_pressed: Option<AriaPressed>,
+
+    /// Indicates that the element is not editable, but is otherwise operable.
+    /// see [aria_disabled](`AriaAttributes::aria_disabled`).
+    #[prop_or_default]
+    pub aria_readonly: Option<bool>,
+
+    /// Indicates what notifications the user agent will trigger when the accessibility tree within a live region is modified.
+    /// see [aria_atomic](`AriaAttributes::aria_atomic`).
+    #[prop_or_default]
+    pub aria_relevant: Option<AriaRelevant>,
+
+    /// Indicates that user input is required on the element before a form may be submitted.
+    #[prop_or_default]
+    pub aria_required: Option<bool>,
+
+    /// Defines a human-readable, author-localized description for the role of an element.
+    #[prop_or_default]
+    pub aria_roledescription: Option<String>,
+
+    /// Defines the total number of rows in a table, grid, or treegrid.
+    /// see [aria_rowindex](`AriaAttributes::aria_rowindex`).
+    #[prop_or_default]
+    pub aria_rowcount: Option<u64>,
+
+    /// Defines an element's row index or position with respect to the total number of rows within a table, grid, or treegrid.
+    /// see [aria_rowcount](`AriaAttributes::aria_rowcount`) see [aria_rowspan](`AriaAttributes::aria_rowspan`).
+    #[prop_or_default]
+    pub aria_rowindex: Option<u64>,
+
+    /// Defines the number of rows spanned by a cell or gridcell within a table, grid, or treegrid.
+    /// see [aria_rowindex](`AriaAttributes::aria_rowindex`) see [aria_colspan](`AriaAttributes::aria_colspan`).
+    #[prop_or_default]
+    pub aria_rowspan: Option<u64>,
+
+    /// Indicates the current "selected" state of various widgets.
+    /// see [aria_checked](`AriaAttributes::aria_checked`) see [aria_pressed](`AriaAttributes::aria_pressed`).
+    #[prop_or_default]
+    pub aria_selected: Option<bool>,
+
+    /// Defines the number of items in the current set of listitems or treeitems. Not required if all elements in the set are present in the DOM.
+    /// see [aria_posinset](`AriaAttributes::aria_posinset`).
+    #[prop_or_default]
+    pub aria_setsize: Option<u64>,
+
+    /// Indicates if items in a table or grid are sorted in ascending or descending order.
+    #[prop_or_default]
+    pub aria_sort: Option<AriaSort>,
+
+    /// Defines the maximum allowed value for a range widget.
+    #[prop_or_default]
+    pub aria_valuemax: Option<u64>,
+
+    /// Defines the minimum allowed value for a range widget.
+    #[prop_or_default]
+    pub aria_valuemin: Option<u64>,
+
+    // Defines the current value for a range widget.
+    // see [aria_valuetext](`AriaAttributes::aria_valuetext`).
+    #[prop_or_default]
+    pub aria_valuenow: Option<u64>,
+
+    /// Defines the human readable text alternative of aria-valuenow for a range widget.
+    /// #[prop_or_default]
+    pub aria_valuetext: Option<String>,
 }
 
 impl AttributeCollection for AriaAttributes {
@@ -367,6 +417,18 @@ pub fn aria_to_html_val_string(value_info: &ValueInfo, value: &dyn Reflect) -> O
         }
         "core::option::Option<yew_dom_attributes::aria_attributes::AriaOrientation>" => {
             let downcast = value.downcast_ref::<Option<AriaOrientation>>().unwrap();
+            convert_to_string(downcast)
+        }
+        "core::option::Option<yew_dom_attributes::aria_attributes::AriaPressed>" => {
+            let downcast = value.downcast_ref::<Option<AriaPressed>>().unwrap();
+            convert_to_string(downcast)
+        }
+        "core::option::Option<yew_dom_attributes::aria_attributes::AriaSort>" => {
+            let downcast = value.downcast_ref::<Option<AriaSort>>().unwrap();
+            convert_to_string(downcast)
+        }
+        "core::option::Option<yew_dom_attributes::aria_attributes::AriaRelevant>" => {
+            let downcast = value.downcast_ref::<Option<AriaRelevant>>().unwrap();
             convert_to_string(downcast)
         }
         _ => default_to_html_val_string(value_info, value),
