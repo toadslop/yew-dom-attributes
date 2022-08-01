@@ -13,6 +13,8 @@ pub mod button_html_attributes;
 
 pub mod html_attributes;
 
-pub mod dom_attributes;
+pub mod events;
 
 pub mod listener_injector;
+
+pub mod callback_holder;

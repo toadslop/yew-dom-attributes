@@ -30,8 +30,10 @@ where
     }
 
     pub fn remove_attribute(&mut self, attribute: T) -> bool {
-        self.attributes.remove(&attribute);
-        self.attributes_to_remove.insert(attribute)
+        match self.attributes.remove(&attribute) {
+            true => self.attributes_to_remove.insert(attribute),
+            false => false,
+        }
     }
 }
 

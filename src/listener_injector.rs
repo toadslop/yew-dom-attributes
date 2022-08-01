@@ -6,11 +6,11 @@ use yew::NodeRef;
 pub trait ListenerInjector {
     /// The inject function takes a NodeRef in which to set the event listeners.
     /// You'll need to convert the NodeRef to an Element and use set_attribute.
-    fn inject_listeners(&self, node_ref: &NodeRef) -> Result<(), AddListenerError>;
+    fn inject_listeners(&mut self, node_ref: &NodeRef) -> Result<(), AddListenerError>;
 
     /// This function should be called on the destroy method of the Yew component.
     /// It should remove all the listeners.
-    fn cleanup_listeners(&self, node_ref: &NodeRef) -> Result<(), RemoveListenerError>;
+    fn cleanup_listeners(&mut self, node_ref: &NodeRef) -> Result<(), RemoveListenerError>;
 }
 
 /// This error indicates that an injection of an attribute to the DOM failed.

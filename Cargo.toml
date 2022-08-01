@@ -4,7 +4,9 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+nanoid = "0.4.0"
 strum = {version = "0.24.1", features = ["strum_macros", "derive"]}
+wasm-bindgen = "0.2.82"
 web-sys = { version = "0.3.59", features = ["Element", "console"]}
 yew = "0.19.3"
 
