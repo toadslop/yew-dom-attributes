@@ -1,125 +1,53 @@
-use nanoid::nanoid;
-use std::{collections::HashMap, hash::Hash};
-use wasm_bindgen::{closure::WasmClosure, prelude::Closure, JsCast};
+use gloo_events::EventListener;
+
+use wasm_bindgen::JsCast;
 use web_sys::Element;
-use yew::{html::onabort::Event, NodeRef};
+use yew::{NodeRef, TargetCast};
 
-use crate::listener_injector::{AddListenerError, ListenerInjector, RemoveListenerError};
+use crate::listener_injector::{AddListenerError, ListenerInjector};
 
-#[derive(Debug)]
-struct ClosureWrapper<T>(Closure<T>)
-where
-    Closure<T>: WasmClosure;
-
-impl<T> Hash for ClosureWrapper<T>
-where
-    Closure<T>: WasmClosure,
-    T: WasmClosure,
-{
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        self.0.into_js_value().as_string().hash(state);
-    }
+pub struct CallbackHolder<T: JsCast + 'static> {
+    callbacks_to_add: Vec<Box<dyn Callback<Event = T>>>,
+    listeners: Vec<EventListener>,
 }
 
-#[derive(Debug)]
-pub struct CallbackHolder {
-    callbacks: HashMap<String, (String, Closure<dyn FnMut(web_sys::Event)>)>,
-    callbacks_to_remove: HashMap<String, (String, Closure<dyn FnMut(web_sys::Event)>)>,
-}
-
-impl CallbackHolder {
+impl<T: JsCast + std::convert::AsRef<yew::Event>> CallbackHolder<T> {
     pub fn new() -> Self {
         Self {
-            callbacks: HashMap::new(),
-            callbacks_to_remove: HashMap::new(),
+            callbacks_to_add: Vec::new(),
+            listeners: Vec::new(),
         }
     }
 
-    pub fn add_callback(
+    pub fn add_callback<C: Callback>(
         &mut self,
-        callback: impl Callback + 'static,
-    ) -> Option<(String, Closure<(dyn FnMut(Event) + 'static)>)> {
-        let id = nanoid!();
-        let event_type = callback.get_event_type().clone();
-        let closure = Closure::<dyn FnMut(web_sys::Event)>::new(move |event: web_sys::Event| {
-            callback.get_callback().emit(event)
-        });
-
-        self.callbacks.insert(id, (event_type, closure))
-    }
-
-    pub fn remove_callback<T>(
-        &mut self,
-        callback: impl Callback + 'static,
-    ) -> Option<(String, Closure<(dyn FnMut(Event) + 'static)>)> {
-        match self.callbacks.remove(&callback.get_id()) {
-            Some((event_type, closure)) => self
-                .callbacks_to_remove
-                .insert(callback.get_id(), (event_type, closure)),
-            None => None,
-        }
-    }
-
-    fn cleanup_callbacks(
-        &self,
-        elem: &Element,
-        callbacks_to_remove: &HashMap<String, (String, Closure<dyn FnMut(web_sys::Event)>)>,
-    ) -> Result<(), AddListenerError> {
-        for (_id, (event_type, closure)) in callbacks_to_remove.iter() {
-            match elem
-                .remove_event_listener_with_callback(event_type, closure.as_ref().unchecked_ref())
-            {
-                Ok(_) => todo!(),
-                Err(_err) => return Err(AddListenerError::new(event_type.to_owned())),
-            }
-        }
-
-        Ok(())
+        callback: Box<(dyn Callback<Event = T> + 'static)>,
+    ) {
+        self.callbacks_to_add.push(callback);
     }
 }
 
-impl ListenerInjector for CallbackHolder {
+impl<T: JsCast + std::convert::AsRef<yew::Event>> ListenerInjector for CallbackHolder<T> {
     fn inject_listeners(&mut self, node_ref: &NodeRef) -> Result<(), AddListenerError> {
         if let Some(elem) = node_ref.cast::<Element>() {
-            match self.cleanup_callbacks(&elem, &self.callbacks_to_remove) {
-                Ok(_) => self.callbacks_to_remove.clear(),
-                Err(_) => (),
-            };
+            while let Some(callback) = self.callbacks_to_add.pop() {
+                let listener =
+                    EventListener::new(&elem, callback.as_ref().get_event_type(), move |e| {
+                        let event = e.clone();
+                        let event = event.dyn_into::<T>().unwrap();
+                        callback.as_ref().get_callback().emit(event)
+                    });
 
-            for (_id, (event_type, closure)) in self.callbacks.iter() {
-                match elem
-                    .add_event_listener_with_callback(event_type, closure.as_ref().unchecked_ref())
-                {
-                    Ok(_) => (),
-                    Err(_err) => return Err(AddListenerError::new(event_type.to_owned())),
-                }
-                // closure.forget();
+                self.listeners.push(listener);
             }
-        }
-        Ok(())
-    }
-
-    /// This function should be called on the destroy method of the Yew component.
-    /// It should remove all the listeners.
-    fn cleanup_listeners(&mut self, node_ref: &NodeRef) -> Result<(), RemoveListenerError> {
-        if let Some(elem) = node_ref.cast::<Element>() {
-            match self.cleanup_callbacks(&elem, &self.callbacks_to_remove) {
-                Ok(_) => self.callbacks_to_remove.clear(),
-                Err(_) => (),
-            };
-
-            match self.cleanup_callbacks(&elem, &self.callbacks) {
-                Ok(_) => self.callbacks.clear(),
-                Err(_) => (),
-            };
         }
         Ok(())
     }
 }
 
 pub trait Callback {
-    type Event;
+    type Event: TargetCast;
 
     fn get_event_type(&self) -> String;
-    fn get_callback(&self) -> &yew::Callback<Event>;
+    fn get_callback(&self) -> &yew::Callback<Self::Event>;
 }
