@@ -1,7 +1,7 @@
 use crate::{
-    aria_attributes::AriaAttributes2,
-    attribute_collection::AttributeCollection,
+    aria_attributes::AriaAttributes,
     attribute_holder::{Attribute, AttributeHolder},
+    attribute_injector::AttributeInjector,
 };
 use strum::Display;
 use yew::Properties;
@@ -77,7 +77,7 @@ pub enum ButtonValue {
 #[derive(Debug, Properties, PartialEq, Clone)]
 pub struct ButtonHtmlAttributes {
     button_attributes: AttributeHolder<ButtonOwnHtmlAttributes>,
-    aria_attributes: AttributeHolder<AriaAttributes2>,
+    aria_attributes: AttributeHolder<AriaAttributes>,
 }
 
 impl ButtonHtmlAttributes {
@@ -92,16 +92,16 @@ impl ButtonHtmlAttributes {
         self.button_attributes.add_attribute(attribute);
     }
 
-    pub fn add_aria_attribute(&mut self, attribute: AriaAttributes2) {
+    pub fn add_aria_attribute(&mut self, attribute: AriaAttributes) {
         self.aria_attributes.add_attribute(attribute);
     }
 }
 
-impl AttributeCollection for ButtonHtmlAttributes {
+impl AttributeInjector for ButtonHtmlAttributes {
     fn inject(
         &self,
         node_ref: &yew::NodeRef,
-    ) -> Result<(), crate::attribute_collection::SetAttributeError> {
+    ) -> Result<(), crate::attribute_injector::SetAttributeError> {
         self.button_attributes.inject(node_ref)?;
         self.aria_attributes.inject(node_ref)?;
         Ok(())
