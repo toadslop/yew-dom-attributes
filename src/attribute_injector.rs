@@ -6,7 +6,7 @@ use yew::NodeRef;
 pub trait AttributeInjector {
     /// The inject function takes a NodeRef in which to inject the fields of the struct as html attributes.
     /// You'll need to convert the NodeRef to an Element and use set_attribute.
-    fn inject(&self, node_ref: &NodeRef) -> Result<(), SetAttributeError>;
+    fn inject(&mut self, node_ref: &NodeRef) -> Result<(), SetAttributeError>;
 }
 
 /// This error indicates that an injection of an attribute to the DOM failed.
@@ -36,32 +36,3 @@ impl Display for SetAttributeError {
         )
     }
 }
-
-// pub fn default_to_html_val_string(value_info: &ValueInfo, value: &dyn Reflect) -> Option<String> {
-//     let type_name = value_info.type_name();
-//     let result = match type_name {
-//         "core::option::Option<alloc::string::String>" => {
-//             let downcast = value.downcast_ref::<Option<String>>().unwrap();
-//             convert_to_string(downcast)
-//         }
-//         "core::option::Option<bool>" => {
-//             let downcast = value.downcast_ref::<Option<bool>>().unwrap();
-//             convert_to_string(downcast)
-//         }
-//         "core::option::Option<u64>" => {
-//             let downcast = value.downcast_ref::<Option<u64>>().unwrap();
-//             convert_to_string(downcast)
-//         }
-//         _ => None,
-//     };
-
-//     result
-// }
-
-// pub fn convert_to_string(option: &Option<impl Display>) -> Option<String> {
-//     if let Some(val) = option {
-//         Some(val.to_string())
-//     } else {
-//         None
-//     }
-// }

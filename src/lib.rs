@@ -10,3 +10,9 @@ pub mod misc_attributes;
 pub mod attribute_holder;
 
 pub mod button_html_attributes;
+
+pub mod html_attributes;
+
+pub mod dom_attributes;
+
+pub mod listener_injector;

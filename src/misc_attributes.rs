@@ -38,7 +38,7 @@ impl From<HashMap<String, Option<String>>> for MiscAttrs {
 impl AttributeInjector for MiscAttrs {
     /// Call the render method within the rendered method of a component, passing in the NodeRef of the component.
     /// This will then inject the props.
-    fn inject(&self, node_ref: &NodeRef) -> Result<(), SetAttributeError> {
+    fn inject(&mut self, node_ref: &NodeRef) -> Result<(), SetAttributeError> {
         if let Some(elem) = node_ref.cast::<Element>() {
             for (key, maybe_val) in &self.0 {
                 let val = maybe_val.clone().unwrap_or("".to_string());
