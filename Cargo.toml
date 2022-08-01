@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+gloo-events = "0.1.2"
 nanoid = "0.4.0"
 strum = {version = "0.24.1", features = ["strum_macros", "derive"]}
 wasm-bindgen = "0.2.82"
