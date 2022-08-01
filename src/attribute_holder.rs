@@ -11,6 +11,7 @@ where
     T: Attribute + Hash + Eq,
 {
     attributes: HashSet<T>,
+    attributes_to_remove: HashSet<T>,
 }
 
 impl<T> AttributeHolder<T>
@@ -20,11 +21,17 @@ where
     pub fn new() -> Self {
         Self {
             attributes: HashSet::new(),
+            attributes_to_remove: HashSet::new(),
         }
     }
 
-    pub fn add_attribute(&mut self, attribute: T) {
-        self.attributes.insert(attribute);
+    pub fn add_attribute(&mut self, attribute: T) -> bool {
+        self.attributes.insert(attribute)
+    }
+
+    pub fn remove_attribute(&mut self, attribute: T) -> bool {
+        self.attributes.remove(&attribute);
+        self.attributes_to_remove.insert(attribute)
     }
 }
 
@@ -32,8 +39,22 @@ impl<T> AttributeInjector for AttributeHolder<T>
 where
     T: Attribute + Hash + Eq,
 {
-    fn inject(&self, node_ref: &NodeRef) -> Result<(), SetAttributeError> {
+    fn inject(&mut self, node_ref: &NodeRef) -> Result<(), SetAttributeError> {
         if let Some(elem) = node_ref.cast::<Element>() {
+            for attribute in self.attributes_to_remove.iter() {
+                match elem.remove_attribute(&attribute.get_key()) {
+                    Ok(_) => (),
+                    Err(_) => {
+                        return Err(SetAttributeError::new(
+                            attribute.get_key(),
+                            attribute.get_val(),
+                        ))
+                    }
+                }
+            }
+
+            self.attributes_to_remove.clear();
+
             for attribute in self.attributes.iter() {
                 match elem.set_attribute(
                     &attribute.get_key(),
