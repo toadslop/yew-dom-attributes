@@ -2,8 +2,9 @@ use strum::Display;
 
 use crate::attribute_holder::Attribute;
 
+/// [https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Attributes/aria-autocomplete]
 #[derive(Debug, PartialEq, Clone, Display, Hash, Eq)]
-#[strum(serialize_all = "kebab-case")]
+#[strum(serialize_all = "lowercase")]
 pub enum AriaAutocomplete {
     None,
     Inline,
@@ -12,7 +13,7 @@ pub enum AriaAutocomplete {
 }
 
 #[derive(Debug, PartialEq, Clone, Display, Eq)]
-#[strum(serialize_all = "kebab-case")]
+#[strum(serialize_all = "lowercase")]
 pub enum AriaChecked {
     False,
     Mixed,
@@ -20,7 +21,7 @@ pub enum AriaChecked {
 }
 
 #[derive(Debug, PartialEq, Clone, Display, Eq)]
-#[strum(serialize_all = "kebab-case")]
+#[strum(serialize_all = "lowercase")]
 pub enum AriaCurrent {
     False,
     True,
@@ -32,7 +33,7 @@ pub enum AriaCurrent {
 }
 
 #[derive(Debug, PartialEq, Clone, Display, Eq)]
-#[strum(serialize_all = "kebab-case")]
+#[strum(serialize_all = "lowercase")]
 pub enum AriaDropeffect {
     None,
     Copy,
@@ -43,7 +44,7 @@ pub enum AriaDropeffect {
 }
 
 #[derive(Debug, PartialEq, Clone, Display, Eq)]
-#[strum(serialize_all = "kebab-case")]
+#[strum(serialize_all = "lowercase")]
 pub enum AriaHasPopup {
     False,
     True,
@@ -55,7 +56,7 @@ pub enum AriaHasPopup {
 }
 
 #[derive(Debug, PartialEq, Clone, Display, Eq)]
-#[strum(serialize_all = "kebab-case")]
+#[strum(serialize_all = "lowercase")]
 pub enum AriaInvalid {
     False,
     True,
@@ -64,7 +65,7 @@ pub enum AriaInvalid {
 }
 
 #[derive(Debug, PartialEq, Clone, Display, Eq)]
-#[strum(serialize_all = "kebab-case")]
+#[strum(serialize_all = "lowercase")]
 pub enum AriaLive {
     Off,
     Assertive,
@@ -72,7 +73,7 @@ pub enum AriaLive {
 }
 
 #[derive(Debug, PartialEq, Clone, Display, Eq)]
-#[strum(serialize_all = "kebab-case")]
+#[strum(serialize_all = "lowercase")]
 pub enum AriaOrientation {
     Horizontal,
     Vertical,
@@ -102,7 +103,7 @@ pub enum AriaRelevant {
 }
 
 #[derive(Debug, PartialEq, Clone, Display, Eq)]
-#[strum(serialize_all = "kebab-case")]
+#[strum(serialize_all = "lowercase")]
 pub enum AriaSort {
     None,
     Ascending,
@@ -110,6 +111,8 @@ pub enum AriaSort {
     Other,
 }
 
+/// An enum defining the different Aria attribute values. Each variant takes a tuple that represents the valid values
+/// for the attributes.
 #[derive(Debug, Clone, Display, Eq)]
 #[strum(serialize_all = "kebab-case")]
 pub enum AriaAttributes {
