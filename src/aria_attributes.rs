@@ -390,3 +390,9 @@ impl Attribute for AriaAttributes {
         }
     }
 }
+
+pub trait AriaAttributeReceiver {
+    fn add_aria_attribute(&mut self, attribute: AriaAttributes) -> bool;
+
+    fn remove_aria_attribute(&mut self, attribute: AriaAttributes) -> bool;
+}

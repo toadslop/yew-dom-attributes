@@ -1,20 +1,5 @@
-use crate::{
-    aria_attributes::AriaAttributes,
-    attribute_holder::{Attribute, AttributeHolder},
-    attribute_injector::AttributeInjector,
-    callback_holder::CallbackHolder,
-    events::{
-        AnimationEvents, CustomEvent, DragEvents, EventPropsReceiver, FocusEvents, GenericEvents,
-        InputEvents, KeyboardEvents, MouseEvents, PointerEvents, ProgressEvents, TouchEvents,
-        TransitionEvents, WheelEvents,
-    },
-    html_attributes::HtmlAttributes,
-    listener_injector::ListenerInjector,
-    misc_attributes::MiscAttrs,
-};
+use crate::attribute_holder::Attribute;
 use strum::Display;
-
-use yew::Properties;
 
 #[derive(Debug, Clone, Display)]
 #[strum(serialize_all = "camelCase")]

@@ -235,3 +235,9 @@ pub enum InputMode {
     Decimal,
     Search,
 }
+
+pub trait HtmlAttributeReceiver {
+    fn add_html_attribute(&mut self, attribute: HtmlAttributes) -> bool;
+
+    fn remove_html_attribute(&mut self, attribute: HtmlAttributes) -> bool;
+}

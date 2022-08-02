@@ -4,7 +4,6 @@ use crate::{
     aria_attributes::{AriaAttributeReceiver, AriaAttributes},
     attribute_holder::AttributeHolder,
     attribute_injector::AttributeInjector,
-    button_html_attributes::ButtonHtmlAttributes,
     callback_holder::CallbackHolder,
     events::{
         AnimationEvents, CustomEvent, DragEvents, EventPropsReceiver, FocusEvents, GenericEvents,
@@ -17,9 +16,8 @@ use crate::{
 };
 
 #[derive(Debug, Properties, PartialEq, Clone)]
-pub struct ButtonProps {
+pub struct HtmlElementProps {
     // attributes
-    button_attributes: AttributeHolder<ButtonHtmlAttributes>,
     aria_attributes: AttributeHolder<AriaAttributes>,
     html_attributes: AttributeHolder<HtmlAttributes>,
     custom_attributes: CustomAttrs,
@@ -39,10 +37,9 @@ pub struct ButtonProps {
     custom_listeners: CallbackHolder<CustomEvent>,
 }
 
-impl ButtonProps {
+impl HtmlElementProps {
     pub fn new() -> Self {
         Self {
-            button_attributes: AttributeHolder::new(),
             aria_attributes: AttributeHolder::new(),
             html_attributes: AttributeHolder::new(),
             generic_listeners: CallbackHolder::new(),
@@ -62,39 +59,59 @@ impl ButtonProps {
         }
     }
 
-    pub fn add_btn_attribute(&mut self, attribute: ButtonHtmlAttributes) -> bool {
-        self.button_attributes.add_attribute(attribute)
+    pub fn add_html_attribute(&mut self, attribute: HtmlAttributes) -> bool {
+        self.html_attributes.add_attribute(attribute)
     }
 
-    pub fn remove_btn_attribute(&mut self, attribute: ButtonHtmlAttributes) -> bool {
-        self.button_attributes.remove_attribute(attribute)
-    }
-}
-
-impl AttributeInjector for ButtonProps {
-    fn inject(
-        &mut self,
-        node_ref: &yew::NodeRef,
-    ) -> Result<(), crate::attribute_injector::SetAttributeError> {
-        self.button_attributes.inject(node_ref)?;
-        self.aria_attributes.inject(node_ref)?;
-        self.html_attributes.inject(node_ref)?;
-        self.custom_attributes.inject(node_ref)?;
-        Ok(())
+    pub fn remove_html_attribute(&mut self, attribute: HtmlAttributes) -> bool {
+        self.html_attributes.remove_attribute(attribute)
     }
 }
 
-impl ListenerInjector for ButtonProps {
-    fn inject_listeners(
-        &mut self,
-        node_ref: &yew::NodeRef,
-    ) -> Result<Option<Vec<gloo_events::EventListener>>, crate::listener_injector::AddListenerError>
-    {
-        self.mouse_event_listeners.inject_listeners(node_ref)
+impl AriaAttributeReceiver for HtmlElementProps {
+    fn add_aria_attribute(&mut self, attribute: AriaAttributes) -> bool {
+        self.aria_attributes.add_attribute(attribute)
+    }
+
+    fn remove_aria_attribute(&mut self, attribute: AriaAttributes) -> bool {
+        self.aria_attributes.remove_attribute(attribute)
     }
 }
 
-impl EventPropsReceiver for ButtonProps {
+impl HtmlAttributeReceiver for HtmlElementProps {
+    fn add_html_attribute(&mut self, attribute: HtmlAttributes) -> bool {
+        self.html_attributes.add_attribute(attribute)
+    }
+
+    fn remove_html_attribute(&mut self, attribute: HtmlAttributes) -> bool {
+        self.html_attributes.remove_attribute(attribute)
+    }
+}
+
+impl CustomAttributeReceiver for HtmlElementProps {
+    fn add_attribute(&mut self, key: String, value: String) -> bool {
+        match self.custom_attributes.add_attribute(key, value) {
+            Some(_) => true,
+            None => false,
+        }
+    }
+
+    fn add_boolean_attribute(&mut self, key: String) -> bool {
+        match self.custom_attributes.add_boolean_attribute(key) {
+            Some(_) => true,
+            None => false,
+        }
+    }
+
+    fn remove_attribute(&mut self, key: String) -> bool {
+        match self.custom_attributes.remove_attribute(key) {
+            Some(_) => true,
+            None => false,
+        }
+    }
+}
+
+impl EventPropsReceiver for HtmlElementProps {
     fn add_generic_listener(&mut self, callback: GenericEvents) {
         self.generic_listeners.add_callback(callback);
     }
@@ -148,45 +165,24 @@ impl EventPropsReceiver for ButtonProps {
     }
 }
 
-impl AriaAttributeReceiver for ButtonProps {
-    fn add_aria_attribute(&mut self, attribute: AriaAttributes) -> bool {
-        self.aria_attributes.add_attribute(attribute)
-    }
-
-    fn remove_aria_attribute(&mut self, attribute: AriaAttributes) -> bool {
-        self.aria_attributes.remove_attribute(attribute)
-    }
-}
-
-impl HtmlAttributeReceiver for ButtonProps {
-    fn add_html_attribute(&mut self, attribute: HtmlAttributes) -> bool {
-        self.html_attributes.add_attribute(attribute)
-    }
-
-    fn remove_html_attribute(&mut self, attribute: HtmlAttributes) -> bool {
-        self.html_attributes.remove_attribute(attribute)
+impl AttributeInjector for HtmlElementProps {
+    fn inject(
+        &mut self,
+        node_ref: &yew::NodeRef,
+    ) -> Result<(), crate::attribute_injector::SetAttributeError> {
+        self.aria_attributes.inject(node_ref)?;
+        self.html_attributes.inject(node_ref)?;
+        self.custom_attributes.inject(node_ref)?;
+        Ok(())
     }
 }
 
-impl CustomAttributeReceiver for ButtonProps {
-    fn add_attribute(&mut self, key: String, value: String) -> bool {
-        match self.custom_attributes.add_attribute(key, value) {
-            Some(_) => true,
-            None => false,
-        }
-    }
-
-    fn add_boolean_attribute(&mut self, key: String) -> bool {
-        match self.custom_attributes.add_boolean_attribute(key) {
-            Some(_) => true,
-            None => false,
-        }
-    }
-
-    fn remove_attribute(&mut self, key: String) -> bool {
-        match self.custom_attributes.remove_attribute(key) {
-            Some(_) => true,
-            None => false,
-        }
+impl ListenerInjector for HtmlElementProps {
+    fn inject_listeners(
+        &mut self,
+        node_ref: &yew::NodeRef,
+    ) -> Result<Option<Vec<gloo_events::EventListener>>, crate::listener_injector::AddListenerError>
+    {
+        self.mouse_event_listeners.inject_listeners(node_ref)
     }
 }
