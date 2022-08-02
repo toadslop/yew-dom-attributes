@@ -27,6 +27,10 @@ impl MiscAttrs {
     pub fn add_boolean_attribute(&mut self, key: String) {
         self.0.insert(key, None);
     }
+
+    pub fn remove_attribute(&mut self, key: String) {
+        self.0.remove(&key);
+    }
 }
 
 impl From<HashMap<String, Option<String>>> for MiscAttrs {

@@ -2,51 +2,62 @@ use gloo_events::EventListener;
 
 use wasm_bindgen::JsCast;
 use web_sys::Element;
-use yew::{NodeRef, TargetCast};
+use yew::{NodeRef, Properties};
 
 use crate::listener_injector::{AddListenerError, ListenerInjector};
 
-pub struct CallbackHolder<T: JsCast + 'static> {
-    callbacks_to_add: Vec<Box<dyn Callback<Event = T>>>,
-    listeners: Vec<EventListener>,
+#[derive(Debug, Properties, PartialEq, Clone, Default)]
+pub struct CallbackHolder<T>
+where
+    T: Callback + PartialEq,
+{
+    callbacks_to_add: Vec<T>,
 }
 
-impl<T: JsCast + std::convert::AsRef<yew::Event>> CallbackHolder<T> {
+impl<T> CallbackHolder<T>
+where
+    T: Callback + PartialEq,
+{
     pub fn new() -> Self {
         Self {
             callbacks_to_add: Vec::new(),
-            listeners: Vec::new(),
         }
     }
 
-    pub fn add_callback<C: Callback>(
-        &mut self,
-        callback: Box<(dyn Callback<Event = T> + 'static)>,
-    ) {
+    pub fn add_callback(&mut self, callback: T) {
         self.callbacks_to_add.push(callback);
     }
 }
 
-impl<T: JsCast + std::convert::AsRef<yew::Event>> ListenerInjector for CallbackHolder<T> {
-    fn inject_listeners(&mut self, node_ref: &NodeRef) -> Result<(), AddListenerError> {
+impl<T> ListenerInjector for CallbackHolder<T>
+where
+    T: Callback + PartialEq,
+{
+    fn inject_listeners(
+        &mut self,
+        node_ref: &NodeRef,
+    ) -> Result<Option<Vec<EventListener>>, AddListenerError> {
         if let Some(elem) = node_ref.cast::<Element>() {
+            let mut listeners = Vec::new();
             while let Some(callback) = self.callbacks_to_add.pop() {
-                let listener =
-                    EventListener::new(&elem, callback.as_ref().get_event_type(), move |e| {
-                        let event = e.clone();
-                        let event = event.dyn_into::<T>().unwrap();
-                        callback.as_ref().get_callback().emit(event)
-                    });
+                let cb = callback.get_callback().clone();
+                let event_type = callback.get_event_type();
+                let listener = EventListener::new(&elem, event_type, move |e| {
+                    let event = e.clone();
+                    let event = event.dyn_into::<<T as Callback>::Event>().unwrap();
+                    cb.emit(event)
+                });
 
-                self.listeners.push(listener);
+                listeners.push(listener);
             }
+            return Ok(Some(listeners));
         }
-        Ok(())
+        Ok(None)
     }
 }
 
 pub trait Callback {
-    type Event: TargetCast;
+    type Event: JsCast + 'static;
 
     fn get_event_type(&self) -> String;
     fn get_callback(&self) -> &yew::Callback<Self::Event>;

@@ -1,3 +1,4 @@
+use crate::callback_holder;
 use strum::Display;
 use web_sys::{
     AnimationEvent, DragEvent, FocusEvent, InputEvent, KeyboardEvent, MouseEvent, PointerEvent,
@@ -5,12 +6,9 @@ use web_sys::{
 };
 use yew::{html, Callback};
 
-use crate::callback_holder;
-
 #[derive(Debug, PartialEq, Clone, Display)]
 #[strum(serialize_all = "lowercase")]
-pub enum Events {
-    // Yew supported events
+pub enum GenericEvents {
     Abort(Callback<html::onabort::Event>),
     Cancel(Callback<html::oncancel::Event>),
     CanPlay(Callback<html::oncanplay::Event>),
@@ -51,9 +49,11 @@ pub enum Events {
     SelectionChange(Callback<html::onselectionchange::Event>),
     SelectStart(Callback<html::onselectstart::Event>),
     Show(Callback<html::onshow::Event>),
+    PointerLockChange(Callback<html::onpointerlockchange::Event>),
+    PointerLockError(Callback<html::onpointerlockerror::Event>),
 }
 
-impl callback_holder::Callback for Events {
+impl callback_holder::Callback for GenericEvents {
     type Event = web_sys::Event;
 
     fn get_event_type(&self) -> String {
@@ -62,46 +62,48 @@ impl callback_holder::Callback for Events {
 
     fn get_callback(&self) -> &yew::Callback<web_sys::Event> {
         match self {
-            Events::Abort(cb) => cb,
-            Events::Cancel(cb) => cb,
-            Events::CanPlay(cb) => cb,
-            Events::CanPlayThrough(cb) => cb,
-            Events::Change(cb) => cb,
-            Events::Close(cb) => cb,
-            Events::CueChange(cb) => cb,
-            Events::DurationChange(cb) => cb,
-            Events::Emptied(cb) => cb,
-            Events::Ended(cb) => cb,
-            Events::Error(cb) => cb,
-            Events::FormData(cb) => cb,
-            Events::Invalid(cb) => cb,
-            Events::Load(cb) => cb,
-            Events::LoadedData(cb) => cb,
-            Events::LoadedMetadata(cb) => cb,
-            Events::Pause(cb) => cb,
-            Events::Play(cb) => cb,
-            Events::Playing(cb) => cb,
-            Events::RateChange(cb) => cb,
-            Events::Reset(cb) => cb,
-            Events::Resize(cb) => cb,
-            Events::Scroll(cb) => cb,
-            Events::SecurityPolicyViolation(cb) => cb,
-            Events::Seeked(cb) => cb,
-            Events::Seeking(cb) => cb,
-            Events::Select(cb) => cb,
-            Events::SlotChange(cb) => cb,
-            Events::Stalled(cb) => cb,
-            Events::Suspend(cb) => cb,
-            Events::TimeUpdate(cb) => cb,
-            Events::Toggle(cb) => cb,
-            Events::VolumeChange(cb) => cb,
-            Events::Waiting(cb) => cb,
-            Events::Copy(cb) => cb,
-            Events::Cut(cb) => cb,
-            Events::Paste(cb) => cb,
-            Events::SelectionChange(cb) => cb,
-            Events::SelectStart(cb) => cb,
-            Events::Show(cb) => cb,
+            GenericEvents::Abort(cb) => cb,
+            GenericEvents::Cancel(cb) => cb,
+            GenericEvents::CanPlay(cb) => cb,
+            GenericEvents::CanPlayThrough(cb) => cb,
+            GenericEvents::Change(cb) => cb,
+            GenericEvents::Close(cb) => cb,
+            GenericEvents::CueChange(cb) => cb,
+            GenericEvents::DurationChange(cb) => cb,
+            GenericEvents::Emptied(cb) => cb,
+            GenericEvents::Ended(cb) => cb,
+            GenericEvents::Error(cb) => cb,
+            GenericEvents::FormData(cb) => cb,
+            GenericEvents::Invalid(cb) => cb,
+            GenericEvents::Load(cb) => cb,
+            GenericEvents::LoadedData(cb) => cb,
+            GenericEvents::LoadedMetadata(cb) => cb,
+            GenericEvents::Pause(cb) => cb,
+            GenericEvents::Play(cb) => cb,
+            GenericEvents::Playing(cb) => cb,
+            GenericEvents::RateChange(cb) => cb,
+            GenericEvents::Reset(cb) => cb,
+            GenericEvents::Resize(cb) => cb,
+            GenericEvents::Scroll(cb) => cb,
+            GenericEvents::SecurityPolicyViolation(cb) => cb,
+            GenericEvents::Seeked(cb) => cb,
+            GenericEvents::Seeking(cb) => cb,
+            GenericEvents::Select(cb) => cb,
+            GenericEvents::SlotChange(cb) => cb,
+            GenericEvents::Stalled(cb) => cb,
+            GenericEvents::Suspend(cb) => cb,
+            GenericEvents::TimeUpdate(cb) => cb,
+            GenericEvents::Toggle(cb) => cb,
+            GenericEvents::VolumeChange(cb) => cb,
+            GenericEvents::Waiting(cb) => cb,
+            GenericEvents::Copy(cb) => cb,
+            GenericEvents::Cut(cb) => cb,
+            GenericEvents::Paste(cb) => cb,
+            GenericEvents::SelectionChange(cb) => cb,
+            GenericEvents::SelectStart(cb) => cb,
+            GenericEvents::Show(cb) => cb,
+            GenericEvents::PointerLockChange(cb) => cb,
+            GenericEvents::PointerLockError(cb) => cb,
         }
     }
 }
@@ -159,11 +161,17 @@ impl callback_holder::Callback for FocusEvents {
     type Event = FocusEvent;
 
     fn get_event_type(&self) -> String {
-        todo!()
+        self.to_string()
     }
 
     fn get_callback(&self) -> &yew::Callback<Self::Event> {
-        todo!()
+        match self {
+            FocusEvents::Blur(cb) => cb,
+            FocusEvents::Focus(cb) => cb,
+            FocusEvents::FocusIn(cb) => cb,
+            FocusEvents::FocusOut(cb) => cb,
+            FocusEvents::Submit(cb) => cb,
+        }
     }
 }
 
@@ -184,11 +192,20 @@ impl callback_holder::Callback for DragEvents {
     type Event = DragEvent;
 
     fn get_event_type(&self) -> String {
-        todo!()
+        self.to_string()
     }
 
     fn get_callback(&self) -> &yew::Callback<Self::Event> {
-        todo!()
+        match self {
+            DragEvents::Drag(cb) => cb,
+            DragEvents::DragEnd(cb) => cb,
+            DragEvents::DragEnter(cb) => cb,
+            DragEvents::DragExit(cb) => cb,
+            DragEvents::DragLeave(cb) => cb,
+            DragEvents::DragOver(cb) => cb,
+            DragEvents::DragStart(cb) => cb,
+            DragEvents::Drop(cb) => cb,
+        }
     }
 }
 
@@ -202,11 +219,13 @@ impl callback_holder::Callback for InputEvents {
     type Event = InputEvent;
 
     fn get_event_type(&self) -> String {
-        todo!()
+        self.to_string()
     }
 
     fn get_callback(&self) -> &yew::Callback<Self::Event> {
-        todo!()
+        match self {
+            InputEvents::Input(cb) => cb,
+        }
     }
 }
 
@@ -222,11 +241,15 @@ impl callback_holder::Callback for KeyboardEvents {
     type Event = KeyboardEvent;
 
     fn get_event_type(&self) -> String {
-        todo!()
+        self.to_string()
     }
 
     fn get_callback(&self) -> &yew::Callback<Self::Event> {
-        todo!()
+        match self {
+            KeyboardEvents::Keydown(cb) => cb,
+            KeyboardEvents::KeyPress(cb) => cb,
+            KeyboardEvents::KeyUp(cb) => cb,
+        }
     }
 }
 
@@ -242,11 +265,15 @@ impl callback_holder::Callback for ProgressEvents {
     type Event = ProgressEvent;
 
     fn get_event_type(&self) -> String {
-        todo!()
+        self.to_string()
     }
 
     fn get_callback(&self) -> &yew::Callback<Self::Event> {
-        todo!()
+        match self {
+            ProgressEvents::LoadStart(cb) => cb,
+            ProgressEvents::Progress(cb) => cb,
+            ProgressEvents::Loadend(cb) => cb,
+        }
     }
 }
 
@@ -260,11 +287,13 @@ impl callback_holder::Callback for WheelEvents {
     type Event = WheelEvent;
 
     fn get_event_type(&self) -> String {
-        todo!()
+        self.to_string()
     }
 
     fn get_callback(&self) -> &yew::Callback<Self::Event> {
-        todo!()
+        match self {
+            WheelEvents::Wheel(cb) => cb,
+        }
     }
 }
 
@@ -281,11 +310,16 @@ impl callback_holder::Callback for AnimationEvents {
     type Event = AnimationEvent;
 
     fn get_event_type(&self) -> String {
-        todo!()
+        self.to_string()
     }
 
     fn get_callback(&self) -> &yew::Callback<Self::Event> {
-        todo!()
+        match self {
+            AnimationEvents::AnimationCancel(cb) => cb,
+            AnimationEvents::AnimationEnd(cb) => cb,
+            AnimationEvents::AnimationIteration(cb) => cb,
+            AnimationEvents::AnimationStart(cb) => cb,
+        }
     }
 }
 
@@ -298,8 +332,6 @@ pub enum PointerEvents {
     PointerDown(Callback<html::onpointerdown::Event>),
     PointerEnter(Callback<html::onpointerenter::Event>),
     PointerLeave(Callback<html::onpointerleave::Event>),
-    PointerLockChange(Callback<html::onpointerlockchange::Event>),
-    PointerLockError(Callback<html::onpointerlockerror::Event>),
     PointerMove(Callback<html::onpointermove::Event>),
     PointerOut(Callback<html::onpointerout::Event>),
     PointerOver(Callback<html::onpointerover::Event>),
@@ -310,11 +342,22 @@ impl callback_holder::Callback for PointerEvents {
     type Event = PointerEvent;
 
     fn get_event_type(&self) -> String {
-        todo!()
+        self.to_string()
     }
 
     fn get_callback(&self) -> &yew::Callback<Self::Event> {
-        todo!()
+        match self {
+            PointerEvents::GotPointerCapture(cb) => cb,
+            PointerEvents::LostPointerCapture(cb) => cb,
+            PointerEvents::PointerCancel(cb) => cb,
+            PointerEvents::PointerDown(cb) => cb,
+            PointerEvents::PointerEnter(cb) => cb,
+            PointerEvents::PointerLeave(cb) => cb,
+            PointerEvents::PointerMove(cb) => cb,
+            PointerEvents::PointerOut(cb) => cb,
+            PointerEvents::PointerOver(cb) => cb,
+            PointerEvents::PointerUp(cb) => cb,
+        }
     }
 }
 
@@ -331,11 +374,16 @@ impl callback_holder::Callback for TouchEvents {
     type Event = TouchEvent;
 
     fn get_event_type(&self) -> String {
-        todo!()
+        self.to_string()
     }
 
     fn get_callback(&self) -> &yew::Callback<Self::Event> {
-        todo!()
+        match self {
+            TouchEvents::TouchCancel(cb) => cb,
+            TouchEvents::TouchEnd(cb) => cb,
+            TouchEvents::TouchMove(cb) => cb,
+            TouchEvents::TouchStart(cb) => cb,
+        }
     }
 }
 
@@ -352,11 +400,16 @@ impl callback_holder::Callback for TransitionEvents {
     type Event = TransitionEvent;
 
     fn get_event_type(&self) -> String {
-        todo!()
+        self.to_string()
     }
 
     fn get_callback(&self) -> &yew::Callback<Self::Event> {
-        todo!()
+        match self {
+            TransitionEvents::TransitionCancel(cb) => cb,
+            TransitionEvents::TransitionEnd(cb) => cb,
+            TransitionEvents::TransitionRun(cb) => cb,
+            TransitionEvents::TransitionStart(cb) => cb,
+        }
     }
 }
 
@@ -385,4 +438,20 @@ impl callback_holder::Callback for CustomEvent {
     fn get_callback(&self) -> &yew::Callback<Self::Event> {
         &self.callback
     }
+}
+
+pub trait EventPropsReceiver {
+    fn add_generic_listener(&mut self, callback: GenericEvents);
+    fn add_mouse_event_listener(&mut self, callback: MouseEvents);
+    fn add_custom_listener(&mut self, callback: CustomEvent);
+    fn add_transition_event_listener(&mut self, callback: TransitionEvents);
+    fn add_touch_event_listener(&mut self, callback: TouchEvents);
+    fn add_animation_event_listener(&mut self, callback: AnimationEvents);
+    fn add_pointer_event_listener(&mut self, callback: PointerEvents);
+    fn add_wheel_event_listener(&mut self, callback: WheelEvents);
+    fn add_progress_event_listener(&mut self, callback: ProgressEvents);
+    fn add_keyboard_event_listener(&mut self, callback: KeyboardEvents);
+    fn add_drag_event_listener(&mut self, callback: DragEvents);
+    fn add_input_event_listener(&mut self, callback: InputEvents);
+    fn add_focus_event_listeners(&mut self, callback: FocusEvents);
 }
