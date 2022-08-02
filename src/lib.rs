@@ -18,3 +18,5 @@ pub mod events;
 pub mod listener_injector;
 
 pub mod callback_holder;
+
+pub mod props;
