@@ -24,8 +24,9 @@ pub enum HtmlAttributes {
     TabIndex(u64),
     Title(String),
     Translate(Translate),
+
     // WAI-ARIA
-    // Role(AriaRole) TODO: make AriaRole
+    Role(AriaRole),
 
     // RDFa Attributes
     About(String),
@@ -59,6 +60,81 @@ pub enum HtmlAttributes {
     /// Specify that a standard HTML element should behave like a defined custom built-in element
     /// see [https://html.spec.whatwg.org/multipage/custom-elements.html#attr-is]
     Is(String),
+}
+
+#[derive(Debug, Clone, Display, Eq, PartialEq)]
+#[strum(serialize_all = "lowercase")]
+pub enum AriaRole {
+    Alert,
+    AlertDialog,
+    Application,
+    Article,
+    Banner,
+    Button,
+    Cell,
+    Checkbox,
+    ColumnHeader,
+    Combobox,
+    Complementary,
+    ContentInfo,
+    Definition,
+    Dialog,
+    Directory,
+    Document,
+    Feed,
+    Figure,
+    Form,
+    Grid,
+    GridCell,
+    Group,
+    Heading,
+    Img,
+    Link,
+    List,
+    ListBox,
+    ListItem,
+    Log,
+    Main,
+    Marquee,
+    Math,
+    Menu,
+    Menubar,
+    MenuItem,
+    MenuItemCheckbox,
+    MenuItemRadio,
+    Navigation,
+    None,
+    Note,
+    Option,
+    Presentation,
+    ProgressBar,
+    Radio,
+    RadioGroup,
+    Region,
+    Row,
+    RowGroup,
+    RowHeader,
+    ScrollBar,
+    Search,
+    SearchBox,
+    Separator,
+    Slider,
+    SpinButton,
+    Status,
+    Switch,
+    Tab,
+    Table,
+    TabLList,
+    TabPanel,
+    Term,
+    TextNox,
+    Timer,
+    Toolbar,
+    Tooltip,
+    Tree,
+    TreeGrid,
+    TreeItem,
+    Custom(String),
 }
 
 impl Attribute for HtmlAttributes {
@@ -105,6 +181,10 @@ impl Attribute for HtmlAttributes {
             HtmlAttributes::Unselectable(val) => Some(val.to_string()),
             HtmlAttributes::InputMode(val) => Some(val.to_string()),
             HtmlAttributes::Is(val) => Some(val.to_string()),
+            HtmlAttributes::Role(val) => match val {
+                AriaRole::Custom(custom_val) => Some(custom_val.to_string()),
+                _ => Some(val.to_string()),
+            },
         }
     }
 }
