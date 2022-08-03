@@ -31,19 +31,26 @@ pub enum SVGAttributes {
     Accumulate(Accumulate),
     Additive(Additive),
     AlignmentBaseline(AlignmentBaseline),
+    #[strum(serialize = "camelCase")]
     AllowReorder(AllowReorder),
     #[deprecated(
         note = "See details: https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/alphabetic"
     )]
-    Alphabetic(u64),
-    //         amplitude?: number | string | undefined;
-    //         arabicForm?: "initial" | "medial" | "terminal" | "isolated" | undefined;
-    //         ascent?: number | string | undefined;
-    //         attributeName?: string | undefined;
-    //         attributeType?: string | undefined;
-    //         autoReverse?: Booleanish | undefined;
-    //         azimuth?: number | string | undefined;
-    //         baseFrequency?: number | string | undefined;
+    Alphabetic(NumberOrString),
+    Amplitude(NumberOrString),
+    ArabicForm(ArabicForm),
+    #[deprecated(
+        note = "See details: https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/ascent"
+    )]
+    Ascent(NumberOrString),
+    #[strum(serialize = "camelCase")]
+    AttributeName(String),
+    #[strum(serialize = "camelCase")]
+    AttributeType(String),
+    AutoReverse(bool),
+    Azimuth(NumberOrString),
+    #[strum(serialize = "camelCase")]
+    BaseFrequency(NumberOrString),
     //         baselineShift?: number | string | undefined;
     //         baseProfile?: number | string | undefined;
     //         bbox?: number | string | undefined;
@@ -333,4 +340,13 @@ pub enum AlignmentBaseline {
 pub enum AllowReorder {
     No,
     Yes,
+}
+
+#[derive(Debug, Clone, Display, Eq, PartialEq)]
+#[strum(serialize_all = "kebab-case")]
+pub enum ArabicForm {
+    Initial,
+    Medial,
+    Terminal,
+    Isolated,
 }
