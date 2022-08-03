@@ -17,19 +17,28 @@ impl CustomAttrs {
 
     /// Add a key-value pair attribute. This will be rendered to the DOM like this:
     /// <div key="value">
-    pub fn add_attribute(&mut self, key: String, value: String) -> Option<Option<String>> {
-        self.0.insert(key, Some(value))
+    pub fn add_attribute(&mut self, key: String, value: String) -> bool {
+        match self.0.insert(key, Some(value)) {
+            Some(_) => true,
+            None => false,
+        }
     }
 
     /// Add a boolean attribute to the element. It will take a single key and render it to the DOM
     /// as follows:
     /// <div key ></div>
-    pub fn add_boolean_attribute(&mut self, key: String) -> Option<Option<String>> {
-        self.0.insert(key, None)
+    pub fn add_boolean_attribute(&mut self, key: String) -> bool {
+        match self.0.insert(key, None) {
+            Some(_) => true,
+            None => false,
+        }
     }
 
-    pub fn remove_attribute(&mut self, key: String) -> Option<Option<String>> {
-        self.0.remove(&key)
+    pub fn remove_attribute(&mut self, key: String) -> bool {
+        match self.0.remove(&key) {
+            Some(_) => true,
+            None => false,
+        }
     }
 }
 

@@ -1,18 +1,21 @@
+use gloo_events::EventListener;
 use yew::Properties;
 
 use crate::{
-    aria_attributes::{AriaAttributeReceiver, AriaAttributes},
     attribute_holder::AttributeHolder,
     attribute_injector::AttributeInjector,
-    button_html_attributes::ButtonHtmlAttributes,
+    attributes::{
+        aria_attributes::{AriaAttributeReceiver, AriaAttributes},
+        button_html_attributes::ButtonHtmlAttributes,
+        html_attributes::{HtmlAttributeReceiver, HtmlAttributes},
+    },
     callback_holder::CallbackHolder,
     events::{
         AnimationEvents, CustomEvent, DragEvents, EventPropsReceiver, FocusEvents, GenericEvents,
         InputEvents, KeyboardEvents, MouseEvents, PointerEvents, ProgressEvents, TouchEvents,
         TransitionEvents, WheelEvents,
     },
-    html_attributes::{HtmlAttributeReceiver, HtmlAttributes},
-    listener_injector::ListenerInjector,
+    listener_injector::{AddListenerError, ListenerInjector},
     misc_attributes::{CustomAttributeReceiver, CustomAttrs},
 };
 
@@ -88,9 +91,54 @@ impl ListenerInjector for ButtonProps {
     fn inject_listeners(
         &mut self,
         node_ref: &yew::NodeRef,
-    ) -> Result<Option<Vec<gloo_events::EventListener>>, crate::listener_injector::AddListenerError>
-    {
-        self.mouse_event_listeners.inject_listeners(node_ref)
+    ) -> Result<Vec<EventListener>, AddListenerError> {
+        let mut listeners = Vec::new();
+
+        let mouse_listeners = &mut self.mouse_event_listeners.inject_listeners(node_ref)?;
+        listeners.append(mouse_listeners);
+
+        let generic_listeners = &mut self.generic_listeners.inject_listeners(node_ref)?;
+        listeners.append(generic_listeners);
+
+        let custom_listeners = &mut self.custom_listeners.inject_listeners(node_ref)?;
+        listeners.append(custom_listeners);
+
+        let transition_event_listeners =
+            &mut self.transition_event_listeners.inject_listeners(node_ref)?;
+        listeners.append(transition_event_listeners);
+
+        let touch_event_listeners = &mut self.touch_event_listeners.inject_listeners(node_ref)?;
+        listeners.append(touch_event_listeners);
+
+        let animation_event_listeners =
+            &mut self.animation_event_listeners.inject_listeners(node_ref)?;
+        listeners.append(animation_event_listeners);
+
+        let pointer_event_listeners =
+            &mut self.pointer_event_listeners.inject_listeners(node_ref)?;
+        listeners.append(pointer_event_listeners);
+
+        let wheel_event_listeners = &mut self.wheel_event_listeners.inject_listeners(node_ref)?;
+        listeners.append(wheel_event_listeners);
+
+        let progress_event_listeners =
+            &mut self.progress_event_listeners.inject_listeners(node_ref)?;
+        listeners.append(progress_event_listeners);
+
+        let keyboard_event_listeners =
+            &mut self.keyboard_event_listeners.inject_listeners(node_ref)?;
+        listeners.append(keyboard_event_listeners);
+
+        let drag_event_listeners = &mut self.drag_event_listeners.inject_listeners(node_ref)?;
+        listeners.append(drag_event_listeners);
+
+        let input_event_listeners = &mut self.input_event_listeners.inject_listeners(node_ref)?;
+        listeners.append(input_event_listeners);
+
+        let focuse_event_listeners = &mut self.focuse_event_listeners.inject_listeners(node_ref)?;
+        listeners.append(focuse_event_listeners);
+
+        Ok(listeners)
     }
 }
 
@@ -170,23 +218,14 @@ impl HtmlAttributeReceiver for ButtonProps {
 
 impl CustomAttributeReceiver for ButtonProps {
     fn add_attribute(&mut self, key: String, value: String) -> bool {
-        match self.custom_attributes.add_attribute(key, value) {
-            Some(_) => true,
-            None => false,
-        }
+        self.custom_attributes.add_attribute(key, value)
     }
 
     fn add_boolean_attribute(&mut self, key: String) -> bool {
-        match self.custom_attributes.add_boolean_attribute(key) {
-            Some(_) => true,
-            None => false,
-        }
+        self.custom_attributes.add_boolean_attribute(key)
     }
 
     fn remove_attribute(&mut self, key: String) -> bool {
-        match self.custom_attributes.remove_attribute(key) {
-            Some(_) => true,
-            None => false,
-        }
+        self.custom_attributes.remove_attribute(key)
     }
 }

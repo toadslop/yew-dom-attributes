@@ -139,17 +139,17 @@ pub enum AriaAttributes {
     /// Defines the total number of columns in a table, grid, or treegrid.
     ///
     /// see [aria_colindex](`AriaAttributes::aria_colindex`).
-    AriaColcount(u64),
+    AriaColcount(i64),
 
     /// Defines an element's column index or position with respect to the total number of columns within a table, grid, or treegrid.
     ///
     /// see [aria_colcount](`AriaAttributes::aria_colcount`) see [aria_colspan](`AriaAttributes::aria_colspan`).
-    AriaColindex(u64),
+    AriaColindex(i64),
 
     /// Defines the number of columns spanned by a cell or gridcell within a table, grid, or treegrid.
     ///
     /// see[aria_colindex](`AriaAttributes::aria_colindex`) see [aria_rowspan](`AriaAttributes::aria_rowspan`).
-    AriaColspan(u64),
+    AriaColspan(i64),
 
     /// Identifies the element (or elements) whose contents or presence are controlled by the current element.
     ///
@@ -222,7 +222,7 @@ pub enum AriaAttributes {
     AriaLabelledby(String),
 
     /// Defines the hierarchical level of an element within a structure.
-    AriaLevel(u64),
+    AriaLevel(i64),
 
     /// Indicates that an element will be updated, and describes the types of updates the user agents, assistive
     /// technologies, and user can expect from the live region.
@@ -254,7 +254,7 @@ pub enum AriaAttributes {
     /// in the set are present in the DOM.
     ///
     /// see [aria_setsize](`AriaAttributes::aria_setsize`)
-    AriaPosinset(u64),
+    AriaPosinset(i64),
 
     /// Indicates the current "pressed" state of toggle buttons.
     ///
@@ -279,17 +279,17 @@ pub enum AriaAttributes {
     /// Defines the total number of rows in a table, grid, or treegrid.
     ///
     /// see [aria_rowindex](`AriaAttributes::aria_rowindex`).
-    AriaRowcount(u64),
+    AriaRowcount(i64),
 
     /// Defines an element's row index or position with respect to the total number of rows within a table, grid, or treegrid.
     ///
     /// see [aria_rowcount](`AriaAttributes::aria_rowcount`) see [aria_rowspan](`AriaAttributes::aria_rowspan`).
-    AriaRowindex(u64),
+    AriaRowindex(i64),
 
     /// Defines the number of rows spanned by a cell or gridcell within a table, grid, or treegrid.
     ///
     /// see [aria_rowindex](`AriaAttributes::aria_rowindex`) see [aria_colspan](`AriaAttributes::aria_colspan`).
-    AriaRowspan(u64),
+    AriaRowspan(i64),
 
     /// Indicates the current "selected" state of various widgets.
     ///
@@ -300,35 +300,35 @@ pub enum AriaAttributes {
     /// elements in the set are present in the DOM.
     ///
     /// see [aria_posinset](`AriaAttributes::aria_posinset`).
-    AriaSetsize(u64),
+    AriaSetsize(i64),
 
     /// Indicates if items in a table or grid are sorted in ascending or descending order.
     AriaSort(AriaSort),
 
     /// Defines the maximum allowed value for a range widget.
-    AriaValuemax(u64),
+    AriaValuemax(i64),
 
     /// Defines the minimum allowed value for a range widget.
-    AriaValuemin(u64),
+    AriaValuemin(i64),
 
     /// Defines the current value for a range widget.
     ///
     /// see [aria_valuetext](`AriaAttributes::aria_valuetext`).
-    AriaValuenow(u64),
+    AriaValuenow(i64),
 
     /// Defines the human readable text alternative of aria-valuenow for a range widget.
     AriaValuetext(String),
 }
 
-impl std::hash::Hash for AriaAttributes {
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        self.get_key().hash(state)
+impl PartialEq for AriaAttributes {
+    fn eq(&self, other: &Self) -> bool {
+        core::mem::discriminant(self) == core::mem::discriminant(other)
     }
 }
 
-impl PartialEq for AriaAttributes {
-    fn eq(&self, other: &Self) -> bool {
-        self.get_key() == other.get_key()
+impl std::hash::Hash for AriaAttributes {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        core::mem::discriminant(self).hash(state);
     }
 }
 

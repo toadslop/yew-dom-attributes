@@ -36,7 +36,7 @@ where
     fn inject_listeners(
         &mut self,
         node_ref: &NodeRef,
-    ) -> Result<Option<Vec<EventListener>>, AddListenerError> {
+    ) -> Result<Vec<EventListener>, AddListenerError> {
         if let Some(elem) = node_ref.cast::<Element>() {
             let mut listeners = Vec::new();
             while let Some(callback) = self.callbacks_to_add.pop() {
@@ -50,9 +50,9 @@ where
 
                 listeners.push(listener);
             }
-            return Ok(Some(listeners));
+            return Ok(listeners);
         }
-        Ok(None)
+        Ok(Vec::new())
     }
 }
 

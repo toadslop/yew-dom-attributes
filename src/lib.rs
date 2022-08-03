@@ -1,6 +1,3 @@
-#[cfg(feature = "aria_attributes")]
-pub mod aria_attributes;
-
 #[cfg(feature = "attribute_collection")]
 pub mod attribute_injector;
 
@@ -8,10 +5,6 @@ pub mod attribute_injector;
 pub mod misc_attributes;
 
 pub mod attribute_holder;
-
-pub mod button_html_attributes;
-
-pub mod html_attributes;
 
 pub mod events;
 
@@ -21,4 +14,4 @@ pub mod callback_holder;
 
 pub mod props;
 
-pub mod svg_attributes;
+pub mod attributes;

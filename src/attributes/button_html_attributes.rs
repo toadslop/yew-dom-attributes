@@ -17,15 +17,15 @@ pub enum ButtonHtmlAttributes {
     Value(ButtonValue),
 }
 
-impl std::hash::Hash for ButtonHtmlAttributes {
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        self.get_key().hash(state)
+impl PartialEq for ButtonHtmlAttributes {
+    fn eq(&self, other: &Self) -> bool {
+        core::mem::discriminant(self) == core::mem::discriminant(other)
     }
 }
 
-impl PartialEq for ButtonHtmlAttributes {
-    fn eq(&self, other: &Self) -> bool {
-        self.get_key() == other.get_key()
+impl std::hash::Hash for ButtonHtmlAttributes {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        core::mem::discriminant(self).hash(state);
     }
 }
 
@@ -64,5 +64,5 @@ pub enum ButtonType {
 pub enum ButtonValue {
     String(String),
     StringVec(Vec<String>),
-    Number(u64),
+    Number(i64),
 }

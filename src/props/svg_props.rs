@@ -1,3 +1,4 @@
+use gloo_events::EventListener;
 use yew::Properties;
 
 use crate::{
@@ -5,7 +6,7 @@ use crate::{
     attribute_injector::AttributeInjector,
     attributes::{
         aria_attributes::{AriaAttributeReceiver, AriaAttributes},
-        html_attributes::{HtmlAttributeReceiver, HtmlAttributes},
+        svg_attributes::{SVGAttributes, SvgAttributeReceiver},
     },
     callback_holder::CallbackHolder,
     events::{
@@ -13,15 +14,15 @@ use crate::{
         InputEvents, KeyboardEvents, MouseEvents, PointerEvents, ProgressEvents, TouchEvents,
         TransitionEvents, WheelEvents,
     },
-    listener_injector::ListenerInjector,
+    listener_injector::{AddListenerError, ListenerInjector},
     misc_attributes::{CustomAttributeReceiver, CustomAttrs},
 };
 
 #[derive(Debug, Properties, PartialEq, Clone)]
-pub struct HtmlElementProps {
+pub struct SVGProps {
     // attributes
+    svg_attributes: AttributeHolder<SVGAttributes>,
     aria_attributes: AttributeHolder<AriaAttributes>,
-    html_attributes: AttributeHolder<HtmlAttributes>,
     custom_attributes: CustomAttrs,
     // event listeners
     generic_listeners: CallbackHolder<GenericEvents>,
@@ -39,38 +40,17 @@ pub struct HtmlElementProps {
     custom_listeners: CallbackHolder<CustomEvent>,
 }
 
-impl HtmlElementProps {
-    pub fn new() -> Self {
-        Self {
-            aria_attributes: AttributeHolder::new(),
-            html_attributes: AttributeHolder::new(),
-            generic_listeners: CallbackHolder::new(),
-            mouse_event_listeners: CallbackHolder::new(),
-            custom_listeners: CallbackHolder::new(),
-            transition_event_listeners: CallbackHolder::new(),
-            touch_event_listeners: CallbackHolder::new(),
-            animation_event_listeners: CallbackHolder::new(),
-            pointer_event_listeners: CallbackHolder::new(),
-            wheel_event_listeners: CallbackHolder::new(),
-            progress_event_listeners: CallbackHolder::new(),
-            keyboard_event_listeners: CallbackHolder::new(),
-            drag_event_listeners: CallbackHolder::new(),
-            input_event_listeners: CallbackHolder::new(),
-            focuse_event_listeners: CallbackHolder::new(),
-            custom_attributes: CustomAttrs::new(),
-        }
+impl SvgAttributeReceiver for SVGProps {
+    fn add_svg_attribute(&mut self, attribute: SVGAttributes) -> bool {
+        self.svg_attributes.add_attribute(attribute)
     }
 
-    pub fn add_html_attribute(&mut self, attribute: HtmlAttributes) -> bool {
-        self.html_attributes.add_attribute(attribute)
-    }
-
-    pub fn remove_html_attribute(&mut self, attribute: HtmlAttributes) -> bool {
-        self.html_attributes.remove_attribute(attribute)
+    fn remove_svg_attribute(&mut self, attribute: SVGAttributes) -> bool {
+        self.svg_attributes.remove_attribute(attribute)
     }
 }
 
-impl AriaAttributeReceiver for HtmlElementProps {
+impl AriaAttributeReceiver for SVGProps {
     fn add_aria_attribute(&mut self, attribute: AriaAttributes) -> bool {
         self.aria_attributes.add_attribute(attribute)
     }
@@ -80,33 +60,23 @@ impl AriaAttributeReceiver for HtmlElementProps {
     }
 }
 
-impl HtmlAttributeReceiver for HtmlElementProps {
-    fn add_html_attribute(&mut self, attribute: HtmlAttributes) -> bool {
-        self.html_attributes.add_attribute(attribute)
-    }
-
-    fn remove_html_attribute(&mut self, attribute: HtmlAttributes) -> bool {
-        self.html_attributes.remove_attribute(attribute)
-    }
-}
-
-impl CustomAttributeReceiver for HtmlElementProps {
+impl CustomAttributeReceiver for SVGProps {
     fn add_attribute(&mut self, key: String, value: String) -> bool {
         self.custom_attributes.add_attribute(key, value)
-    }
-
-    fn add_boolean_attribute(&mut self, key: String) -> bool {
-        self.custom_attributes.add_boolean_attribute(key)
     }
 
     fn remove_attribute(&mut self, key: String) -> bool {
         self.custom_attributes.remove_attribute(key)
     }
+
+    fn add_boolean_attribute(&mut self, key: String) -> bool {
+        self.custom_attributes.add_boolean_attribute(key)
+    }
 }
 
-impl EventPropsReceiver for HtmlElementProps {
+impl EventPropsReceiver for SVGProps {
     fn add_generic_listener(&mut self, callback: GenericEvents) {
-        self.generic_listeners.add_callback(callback);
+        self.generic_listeners.add_callback(callback)
     }
 
     fn add_mouse_event_listener(&mut self, callback: MouseEvents) {
@@ -114,67 +84,66 @@ impl EventPropsReceiver for HtmlElementProps {
     }
 
     fn add_custom_listener(&mut self, callback: CustomEvent) {
-        self.custom_listeners.add_callback(callback);
+        self.custom_listeners.add_callback(callback)
     }
 
     fn add_transition_event_listener(&mut self, callback: TransitionEvents) {
-        self.transition_event_listeners.add_callback(callback);
+        self.transition_event_listeners.add_callback(callback)
     }
 
     fn add_touch_event_listener(&mut self, callback: TouchEvents) {
-        self.touch_event_listeners.add_callback(callback);
+        self.touch_event_listeners.add_callback(callback)
     }
 
     fn add_animation_event_listener(&mut self, callback: AnimationEvents) {
-        self.animation_event_listeners.add_callback(callback);
+        self.animation_event_listeners.add_callback(callback)
     }
 
     fn add_pointer_event_listener(&mut self, callback: PointerEvents) {
-        self.pointer_event_listeners.add_callback(callback);
+        self.pointer_event_listeners.add_callback(callback)
     }
 
     fn add_wheel_event_listener(&mut self, callback: WheelEvents) {
-        self.wheel_event_listeners.add_callback(callback);
+        self.wheel_event_listeners.add_callback(callback)
     }
 
     fn add_progress_event_listener(&mut self, callback: ProgressEvents) {
-        self.progress_event_listeners.add_callback(callback);
+        self.progress_event_listeners.add_callback(callback)
     }
 
     fn add_keyboard_event_listener(&mut self, callback: KeyboardEvents) {
-        self.keyboard_event_listeners.add_callback(callback);
+        self.keyboard_event_listeners.add_callback(callback)
     }
 
     fn add_drag_event_listener(&mut self, callback: DragEvents) {
-        self.drag_event_listeners.add_callback(callback);
+        self.drag_event_listeners.add_callback(callback)
     }
 
     fn add_input_event_listener(&mut self, callback: InputEvents) {
-        self.input_event_listeners.add_callback(callback);
+        self.input_event_listeners.add_callback(callback)
     }
 
     fn add_focus_event_listeners(&mut self, callback: FocusEvents) {
-        self.focuse_event_listeners.add_callback(callback);
+        self.focuse_event_listeners.add_callback(callback)
     }
 }
 
-impl AttributeInjector for HtmlElementProps {
+impl AttributeInjector for SVGProps {
     fn inject(
         &mut self,
         node_ref: &yew::NodeRef,
     ) -> Result<(), crate::attribute_injector::SetAttributeError> {
         self.aria_attributes.inject(node_ref)?;
-        self.html_attributes.inject(node_ref)?;
         self.custom_attributes.inject(node_ref)?;
         Ok(())
     }
 }
 
-impl ListenerInjector for HtmlElementProps {
+impl ListenerInjector for SVGProps {
     fn inject_listeners(
         &mut self,
         node_ref: &yew::NodeRef,
-    ) -> Result<Vec<gloo_events::EventListener>, crate::listener_injector::AddListenerError> {
+    ) -> Result<Vec<EventListener>, AddListenerError> {
         let mut listeners = Vec::new();
 
         let mouse_listeners = &mut self.mouse_event_listeners.inject_listeners(node_ref)?;

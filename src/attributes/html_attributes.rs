@@ -1,3 +1,5 @@
+use std::hash::Hash;
+
 use strum::Display;
 
 use crate::attribute_holder::Attribute;
@@ -187,15 +189,15 @@ impl Attribute for HtmlAttributes {
     }
 }
 
-impl std::hash::Hash for HtmlAttributes {
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        self.get_key().hash(state)
+impl PartialEq for HtmlAttributes {
+    fn eq(&self, other: &Self) -> bool {
+        core::mem::discriminant(self) == core::mem::discriminant(other)
     }
 }
 
-impl PartialEq for HtmlAttributes {
-    fn eq(&self, other: &Self) -> bool {
-        self.get_key() == other.get_key()
+impl Hash for HtmlAttributes {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        core::mem::discriminant(self).hash(state);
     }
 }
 
