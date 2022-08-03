@@ -2,8 +2,6 @@ use gloo_events::EventListener;
 use std::fmt::{Display, Formatter};
 use yew::NodeRef;
 
-use crate::{callback_holder::CallbackHolder, events::GenericEvents};
-
 /// This trait is used to define how a struct containing event callbacks should be converted into
 /// JavaScript and injected to the DOM.
 pub trait ListenerInjector {
