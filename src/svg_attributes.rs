@@ -1,5 +1,7 @@
 use strum::Display;
 
+use crate::html_attributes::AriaRole;
+
 /// This enum models the attributes for SVG elements.
 #[derive(Debug, Clone, Display, Eq)]
 #[strum(serialize_all = "kebab-case")]
@@ -16,23 +18,24 @@ pub enum SVGAttributes {
     Min(NumberOrString),
     Name(String),
     // Note: implementing css properties is unneccessary since style tags are already handled by Yew and Stylist
-    //         Style: CSSProperties
+    // Style: CSSProperties
     Target(String),
     Type(String),
     Width(NumberOrString),
     // Other HTML properties supported by SVG elements in browsers
-    //         role?: AriaRole | undefined;
-    //         tabIndex?: number | undefined;
-    //         crossOrigin?: "anonymous" | "use-credentials" | "" | undefined;
-
-    //         // SVG Specific attributes
-    //         accentHeight?: number | string | undefined;
-    //         accumulate?: "none" | "sum" | undefined;
-    //         additive?: "replace" | "sum" | undefined;
-    //         alignmentBaseline?: "auto" | "baseline" | "before-edge" | "text-before-edge" | "middle" | "central" | "after-edge" |
-    //         "text-after-edge" | "ideographic" | "alphabetic" | "hanging" | "mathematical" | "inherit" | undefined;
-    //         allowReorder?: "no" | "yes" | undefined;
-    //         alphabetic?: number | string | undefined;
+    Role(AriaRole),
+    TabIndex(u64),
+    CrossOrigin(CrossOrigin),
+    // SVG Specific attributes
+    AccentHeight(NumberOrString),
+    Accumulate(Accumulate),
+    Additive(Additive),
+    AlignmentBaseline(AlignmentBaseline),
+    AllowReorder(AllowReorder),
+    #[deprecated(
+        note = "See details: https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/alphabetic"
+    )]
+    Alphabetic(u64),
     //         amplitude?: number | string | undefined;
     //         arabicForm?: "initial" | "medial" | "terminal" | "isolated" | undefined;
     //         ascent?: number | string | undefined;
@@ -278,8 +281,56 @@ impl PartialEq for SVGAttributes {
     }
 }
 
-#[derive(Debug, Clone, Display, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum NumberOrString {
     Number(u64),
     String(String),
+}
+
+#[derive(Debug, Clone, Display, Eq, PartialEq)]
+#[strum(serialize_all = "kebab-case")]
+pub enum CrossOrigin {
+    Anonymous,
+    UseCredentials,
+    #[strum(serialize = "\"\"")] // TODO: add backslash once the interet comes back
+    Blank,
+}
+
+#[derive(Debug, Clone, Display, Eq, PartialEq)]
+#[strum(serialize_all = "lowercase")]
+pub enum Accumulate {
+    None,
+    Sum,
+}
+
+#[derive(Debug, Clone, Display, Eq, PartialEq)]
+#[strum(serialize_all = "lowercase")]
+pub enum Additive {
+    Replace,
+    Sum,
+}
+
+#[derive(Debug, Clone, Display, Eq, PartialEq)]
+#[strum(serialize_all = "kebab-case")]
+pub enum AlignmentBaseline {
+    Auto,
+    Baseline,
+    BeforeEdge,
+    TextBeforeEdge,
+    Middle,
+    Central,
+    AfterEdge,
+    TextAfterEdge,
+    Ideographic,
+    Alphabetic,
+    Hanging,
+    Mathematical,
+    Inherit,
+}
+
+#[derive(Debug, Clone, Display, Eq, PartialEq)]
+#[strum(serialize_all = "kebab-case")]
+pub enum AllowReorder {
+    No,
+    Yes,
 }

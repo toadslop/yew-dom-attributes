@@ -144,7 +144,6 @@ impl Attribute for HtmlAttributes {
     fn get_val(&self) -> Option<String> {
         match self {
             HtmlAttributes::AccessKey(val) => Some(val.to_string()),
-            HtmlAttributes::Class(val) => Some(val.to_string()),
             HtmlAttributes::ContentEditable(val) => Some(val.to_string()),
             HtmlAttributes::ContextMenu(val) => Some(val.to_string()),
             HtmlAttributes::Dir(val) => Some(val.to_string()),
