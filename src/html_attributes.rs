@@ -7,9 +7,8 @@ use crate::attribute_holder::Attribute;
 pub enum HtmlAttributes {
     // Standard HTML Attributes
     AccessKey(String),
-    /// Warning: this will override Yew's core class attribute.
-    /// Do not use this unless you have a particular need to do so.
-    Class(String),
+    // Note: class is already handled well by Yew, so we are disabling it here.
+    // Class(String),
     ContentEditable(ContentEditable),
     ContextMenu(String),
     Dir(String),

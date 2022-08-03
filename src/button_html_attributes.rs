@@ -1,7 +1,7 @@
 use crate::attribute_holder::Attribute;
 use strum::Display;
 
-#[derive(Debug, Clone, Display)]
+#[derive(Debug, Clone, Display, Eq)]
 #[strum(serialize_all = "camelCase")]
 pub enum ButtonHtmlAttributes {
     AutoFocus,
@@ -28,8 +28,6 @@ impl PartialEq for ButtonHtmlAttributes {
         self.get_key() == other.get_key()
     }
 }
-
-impl Eq for ButtonHtmlAttributes {}
 
 impl Attribute for ButtonHtmlAttributes {
     fn get_key(&self) -> String {
