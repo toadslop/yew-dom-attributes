@@ -51,18 +51,21 @@ pub enum SVGAttributes {
     Azimuth(NumberOrString),
     #[strum(serialize = "camelCase")]
     BaseFrequency(NumberOrString),
-    //         baselineShift?: number | string | undefined;
-    //         baseProfile?: number | string | undefined;
-    //         bbox?: number | string | undefined;
-    //         begin?: number | string | undefined;
-    //         bias?: number | string | undefined;
-    //         by?: number | string | undefined;
-    //         calcMode?: number | string | undefined;
-    //         capHeight?: number | string | undefined;
-    //         clip?: number | string | undefined;
-    //         clipPath?: string | undefined;
-    //         clipPathUnits?: number | string | undefined;
-    //         clipRule?: number | string | undefined;
+    BaselineShift(NumberOrString),
+    #[strum(serialize = "camelCase")]
+    BaseProfile(NumberOrString),
+    Bbox(NumberOrString),
+    Begin(NumberOrString),
+    Bias(NumberOrString),
+    By(NumberOrString),
+    CalcMode(NumberOrString),
+    CapHeight(NumberOrString),
+    Clip(NumberOrString),
+    #[strum(serialize = "camelCase")]
+    ClipPath(String),
+    #[strum(serialize = "camelCase")]
+    ClipPathUnits(ClipPathUnits),
+    ClipRule(ClipRule),
     //         colorInterpolation?: number | string | undefined;
     //         colorInterpolationFilters?: "auto" | "sRGB" | "linearRGB" | "inherit" | undefined;
     //         colorProfile?: number | string | undefined;
@@ -349,4 +352,19 @@ pub enum ArabicForm {
     Medial,
     Terminal,
     Isolated,
+}
+
+#[derive(Debug, Clone, Display, Eq, PartialEq)]
+#[strum(serialize_all = "lowercase")]
+pub enum ClipRule {
+    Nonzero,
+    Evenodd,
+    Inherit,
+}
+
+#[derive(Debug, Clone, Display, Eq, PartialEq)]
+#[strum(serialize_all = "camelCase")]
+pub enum ClipPathUnits {
+    UserSpaceOnUse,
+    ObjectBoundingBox,
 }
