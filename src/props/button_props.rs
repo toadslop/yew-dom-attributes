@@ -17,10 +17,14 @@ use crate::{
         TouchEvents, TransitionEvents, WheelEvents,
     },
     listener_injector::{AddListenerError, ListenerInjector},
-    misc_attributes::{CustomAttributeReceiver, CustomAttrs},
 };
 
-use super::ListenerHandler;
+use super::{
+    aria_props::AriaPropsHandler,
+    custom_attributes::{CustomAttributeReceiver, CustomAttrs, CustomPropsHandler},
+    html_element_props::HtmlElementPropsHandler,
+    ListenerHandler,
+};
 
 /// Second iteration of button props. Streamline down to simply 4 data structures.
 /// To maintain type safety for attributes, input is handled by functions which take a specific type.
@@ -79,7 +83,14 @@ pub trait ButtonPropsHandler: super::private::PropsGetterSetter {
 }
 
 impl ButtonPropsHandler for ButtonProps2 {}
+impl AriaPropsHandler for ButtonProps2 {}
+impl HtmlElementPropsHandler for ButtonProps2 {}
+impl CustomPropsHandler for ButtonProps2 {}
 impl ListenerHandler for ButtonProps2 {}
+
+//
+//
+// The original implementation
 
 #[derive(Debug, Properties, PartialEq, Clone)]
 pub struct ButtonProps {

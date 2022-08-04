@@ -6,7 +6,9 @@ use yew::NodeRef;
 
 use crate::events::events::EventType;
 
+pub mod aria_props;
 pub mod button_props;
+pub mod custom_attributes;
 pub mod html_element_props;
 pub mod svg_props;
 // TODO: create builder classes that allow users to build props, step by step specifying the
@@ -20,7 +22,11 @@ mod private {
     use web_sys::Element;
     use yew::Callback;
 
-    use crate::events::events::{EventType, GenericEvents, MouseEvents, TouchEvents};
+    use crate::events::events::{
+        AnimationEvents, CustomEvent, DragEvents, EventType, FocusEvents, GenericEvents,
+        InputEvents, KeyboardEvents, MouseEvents, PointerEvents, ProgressEvents, TouchEvents,
+        TransitionEvents, WheelEvents,
+    };
 
     pub trait PropsGetterSetter {
         fn get_props_to_add(&mut self) -> &mut HashMap<String, Option<String>>;
@@ -122,6 +128,114 @@ mod private {
         };
         build_event_listener(elem, cb, event_type)
     }
+
+    pub fn build_focus_event(elem: &Element, ev: FocusEvents) -> EventListener {
+        let event_type = ev.to_string();
+        let cb = match ev {
+            FocusEvents::Blur(cb) => cb,
+            FocusEvents::Focus(cb) => cb,
+            FocusEvents::FocusIn(cb) => cb,
+            FocusEvents::FocusOut(cb) => cb,
+            FocusEvents::Submit(cb) => cb,
+        };
+        build_event_listener(elem, cb, event_type)
+    }
+
+    pub fn build_drag_event(elem: &Element, ev: DragEvents) -> EventListener {
+        let event_type = ev.to_string();
+        let cb = match ev {
+            DragEvents::Drag(cb) => cb,
+            DragEvents::DragEnd(cb) => cb,
+            DragEvents::DragEnter(cb) => cb,
+            DragEvents::DragExit(cb) => cb,
+            DragEvents::DragLeave(cb) => cb,
+            DragEvents::DragOver(cb) => cb,
+            DragEvents::DragStart(cb) => cb,
+            DragEvents::Drop(cb) => cb,
+        };
+        build_event_listener(elem, cb, event_type)
+    }
+
+    pub fn build_input_event(elem: &Element, ev: InputEvents) -> EventListener {
+        let event_type = ev.to_string();
+        let cb = match ev {
+            InputEvents::Input(cb) => cb,
+        };
+        build_event_listener(elem, cb, event_type)
+    }
+
+    pub fn build_keyboard_event(elem: &Element, ev: KeyboardEvents) -> EventListener {
+        let event_type = ev.to_string();
+        let cb = match ev {
+            KeyboardEvents::Keydown(cb) => cb,
+            KeyboardEvents::KeyPress(cb) => cb,
+            KeyboardEvents::KeyUp(cb) => cb,
+        };
+        build_event_listener(elem, cb, event_type)
+    }
+
+    pub fn build_progress_event(elem: &Element, ev: ProgressEvents) -> EventListener {
+        let event_type = ev.to_string();
+        let cb = match ev {
+            ProgressEvents::LoadStart(cb) => cb,
+            ProgressEvents::Progress(cb) => cb,
+            ProgressEvents::Loadend(cb) => cb,
+        };
+        build_event_listener(elem, cb, event_type)
+    }
+
+    pub fn build_wheel_event(elem: &Element, ev: WheelEvents) -> EventListener {
+        let event_type = ev.to_string();
+        let cb = match ev {
+            WheelEvents::Wheel(cb) => cb,
+        };
+        build_event_listener(elem, cb, event_type)
+    }
+
+    pub fn build_animation_event(elem: &Element, ev: AnimationEvents) -> EventListener {
+        let event_type = ev.to_string();
+        let cb = match ev {
+            AnimationEvents::AnimationCancel(cb) => cb,
+            AnimationEvents::AnimationEnd(cb) => cb,
+            AnimationEvents::AnimationIteration(cb) => cb,
+            AnimationEvents::AnimationStart(cb) => cb,
+        };
+        build_event_listener(elem, cb, event_type)
+    }
+
+    pub fn build_pointer_event(elem: &Element, ev: PointerEvents) -> EventListener {
+        let event_type = ev.to_string();
+        let cb = match ev {
+            PointerEvents::GotPointerCapture(cb) => cb,
+            PointerEvents::LostPointerCapture(cb) => cb,
+            PointerEvents::PointerCancel(cb) => cb,
+            PointerEvents::PointerDown(cb) => cb,
+            PointerEvents::PointerEnter(cb) => cb,
+            PointerEvents::PointerLeave(cb) => cb,
+            PointerEvents::PointerMove(cb) => cb,
+            PointerEvents::PointerOut(cb) => cb,
+            PointerEvents::PointerOver(cb) => cb,
+            PointerEvents::PointerUp(cb) => cb,
+        };
+        build_event_listener(elem, cb, event_type)
+    }
+
+    pub fn build_transition_event(elem: &Element, ev: TransitionEvents) -> EventListener {
+        let event_type = ev.to_string();
+        let cb = match ev {
+            TransitionEvents::TransitionCancel(cb) => cb,
+            TransitionEvents::TransitionEnd(cb) => cb,
+            TransitionEvents::TransitionRun(cb) => cb,
+            TransitionEvents::TransitionStart(cb) => cb,
+        };
+        build_event_listener(elem, cb, event_type)
+    }
+
+    pub fn build_custom_event(elem: &Element, ev: CustomEvent) -> EventListener {
+        let event_type = ev.get_event_type();
+        let cb = ev.get_callback();
+        build_event_listener(elem, cb, event_type)
+    }
 }
 
 /// A trait to be implemented by any element that accepts listeners.
@@ -131,8 +245,10 @@ pub trait ListenerHandler: private::ListenerGetterSetter {
         self.get_listeners_to_add().insert(key, event_type);
     }
 
-    // consider removing this; devs can simply remove the item from the EventListern hashmap
-    // without going through this structure
+    // update how we handle this: this structure will own the event listener
+    // this structure will destroy the listener
+    // possible problem: we want the listener to go when the element its attached
+    // to goes out of scope. but this will be owned by the parent.
     fn remove_listener(&mut self, key: String) {
         self.get_listeners_to_remove().push(key);
     }
@@ -145,6 +261,16 @@ pub trait ListenerHandler: private::ListenerGetterSetter {
                     EventType::MouseEvent(ev) => private::build_mouse_event(&elem, ev),
                     EventType::Event(ev) => private::build_generic_event(&elem, ev),
                     EventType::TouchEvent(ev) => private::build_touch_event(&elem, ev),
+                    EventType::FocusEvent(ev) => private::build_focus_event(&elem, ev),
+                    EventType::DragEvent(ev) => private::build_drag_event(&elem, ev),
+                    EventType::InputEvent(ev) => private::build_input_event(&elem, ev),
+                    EventType::KeyboardEvent(ev) => private::build_keyboard_event(&elem, ev),
+                    EventType::ProgressEvent(ev) => private::build_progress_event(&elem, ev),
+                    EventType::WheelEvent(ev) => private::build_wheel_event(&elem, ev),
+                    EventType::AnimationEvent(ev) => private::build_animation_event(&elem, ev),
+                    EventType::PointerEvent(ev) => private::build_pointer_event(&elem, ev),
+                    EventType::TransitionEvent(ev) => private::build_transition_event(&elem, ev),
+                    EventType::CustomEvent(ev) => private::build_custom_event(&elem, ev),
                 };
 
                 listeners.insert(key, listener);

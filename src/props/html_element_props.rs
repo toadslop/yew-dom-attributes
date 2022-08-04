@@ -14,8 +14,63 @@ use crate::{
         TransitionEvents, WheelEvents,
     },
     listener_injector::ListenerInjector,
-    misc_attributes::{CustomAttributeReceiver, CustomAttrs},
 };
+
+use super::custom_attributes::{CustomAttributeReceiver, CustomAttrs};
+
+pub trait HtmlElementPropsHandler: super::private::PropsGetterSetter {
+    fn add_html_prop(&mut self, prop: HtmlAttributes) {
+        let key = prop.to_string();
+        let val = match &prop {
+            HtmlAttributes::AccessKey(val) => Some(val.to_string()),
+            HtmlAttributes::ContentEditable(val) => Some(val.to_string()),
+            HtmlAttributes::ContextMenu(val) => Some(val.to_string()),
+            HtmlAttributes::Dir(val) => Some(val.to_string()),
+            HtmlAttributes::Draggable(val) => Some(val.to_string()),
+            HtmlAttributes::Hidden(val) => Some(val.to_string()),
+            HtmlAttributes::Id(val) => Some(val.to_string()),
+            HtmlAttributes::Lang(val) => Some(val.to_string()),
+            HtmlAttributes::Placeholder(val) => Some(val.to_string()),
+            HtmlAttributes::Slot(val) => Some(val.to_string()),
+            HtmlAttributes::SpellCheck(val) => Some(val.to_string()),
+            HtmlAttributes::TabIndex(val) => Some(val.to_string()),
+            HtmlAttributes::Title(val) => Some(val.to_string()),
+            HtmlAttributes::Translate(val) => Some(val.to_string()),
+            HtmlAttributes::Role(val) => Some(val.to_string()),
+            HtmlAttributes::About(val) => Some(val.to_string()),
+            HtmlAttributes::Datatype(val) => Some(val.to_string()),
+            HtmlAttributes::Inlist(val) => Some(val.to_string()),
+            HtmlAttributes::Prefix(val) => Some(val.to_string()),
+            HtmlAttributes::Property(val) => Some(val.to_string()),
+            HtmlAttributes::Resource(val) => Some(val.to_string()),
+            HtmlAttributes::Typeof(val) => Some(val.to_string()),
+            HtmlAttributes::Vocab(val) => Some(val.to_string()),
+            HtmlAttributes::AutoCapitalize(val) => Some(val.to_string()),
+            HtmlAttributes::AutoCorrect(val) => Some(val.to_string()),
+            HtmlAttributes::AutoSave(val) => Some(val.to_string()),
+            HtmlAttributes::Color(val) => Some(val.to_string()),
+            HtmlAttributes::ItemProp(val) => Some(val.to_string()),
+            HtmlAttributes::ItemScope(val) => Some(val.to_string()),
+            HtmlAttributes::ItemType(val) => Some(val.to_string()),
+            HtmlAttributes::ItemID(val) => Some(val.to_string()),
+            HtmlAttributes::ItemRef(val) => Some(val.to_string()),
+            HtmlAttributes::Results(val) => Some(val.to_string()),
+            HtmlAttributes::Security(val) => Some(val.to_string()),
+            HtmlAttributes::Unselectable(val) => Some(val.to_string()),
+            HtmlAttributes::InputMode(val) => Some(val.to_string()),
+            HtmlAttributes::Is(val) => Some(val.to_string()),
+        };
+        self.get_props_to_add().insert(key, val);
+    }
+
+    fn remove_html_prop(&mut self, prop: AriaAttributes) {
+        self.get_props_to_remove().push(prop.to_string())
+    }
+}
+
+// Old stuff to replace
+//
+//
 
 #[derive(Debug, Properties, PartialEq, Clone)]
 pub struct HtmlElementProps {

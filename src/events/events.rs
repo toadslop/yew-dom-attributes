@@ -8,9 +8,19 @@ use yew::{html, Callback};
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum EventType {
-    MouseEvent(MouseEvents),
     Event(GenericEvents),
+    MouseEvent(MouseEvents),
+    FocusEvent(FocusEvents),
+    DragEvent(DragEvents),
+    InputEvent(InputEvents),
+    KeyboardEvent(KeyboardEvents),
+    ProgressEvent(ProgressEvents),
+    WheelEvent(WheelEvents),
+    AnimationEvent(AnimationEvents),
+    PointerEvent(PointerEvents),
+    TransitionEvent(TransitionEvents),
     TouchEvent(TouchEvents),
+    CustomEvent(CustomEvent),
 }
 
 #[derive(Debug, PartialEq, Clone, Display)]
@@ -424,6 +434,16 @@ impl callback_holder::Callback for TransitionEvents {
 pub struct CustomEvent {
     event_type: String,
     callback: yew::Callback<web_sys::Event>,
+}
+
+impl CustomEvent {
+    pub fn get_event_type(&self) -> String {
+        self.event_type.clone()
+    }
+
+    pub fn get_callback(&self) -> yew::Callback<web_sys::Event> {
+        self.callback.clone()
+    }
 }
 
 impl CustomEvent {

@@ -15,8 +15,9 @@ use crate::{
         TransitionEvents, WheelEvents,
     },
     listener_injector::{AddListenerError, ListenerInjector},
-    misc_attributes::{CustomAttributeReceiver, CustomAttrs},
 };
+
+use super::custom_attributes::{CustomAttributeReceiver, CustomAttrs};
 
 #[derive(Debug, Properties, PartialEq, Clone)]
 pub struct SVGProps {
