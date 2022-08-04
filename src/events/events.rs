@@ -6,6 +6,13 @@ use web_sys::{
 };
 use yew::{html, Callback};
 
+#[derive(Debug, PartialEq, Clone)]
+pub enum EventType {
+    MouseEvent(MouseEvents),
+    Event(GenericEvents),
+    TouchEvent(TouchEvents),
+}
+
 #[derive(Debug, PartialEq, Clone, Display)]
 #[strum(serialize_all = "lowercase")]
 pub enum GenericEvents {

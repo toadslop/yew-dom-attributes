@@ -1,4 +1,5 @@
 use gloo_events::EventListener;
+use std::collections::HashMap;
 use yew::Properties;
 
 use crate::{
@@ -10,14 +11,75 @@ use crate::{
         html_attributes::{HtmlAttributeReceiver, HtmlAttributes},
     },
     callback_holder::CallbackHolder,
-    events::{
-        AnimationEvents, CustomEvent, DragEvents, EventPropsReceiver, FocusEvents, GenericEvents,
-        InputEvents, KeyboardEvents, MouseEvents, PointerEvents, ProgressEvents, TouchEvents,
-        TransitionEvents, WheelEvents,
+    events::events::{
+        AnimationEvents, CustomEvent, DragEvents, EventPropsReceiver, EventType, FocusEvents,
+        GenericEvents, InputEvents, KeyboardEvents, MouseEvents, PointerEvents, ProgressEvents,
+        TouchEvents, TransitionEvents, WheelEvents,
     },
     listener_injector::{AddListenerError, ListenerInjector},
     misc_attributes::{CustomAttributeReceiver, CustomAttrs},
 };
+
+use super::ListenerHandler;
+
+/// Second iteration of button props. Streamline down to simply 4 data structures.
+/// To maintain type safety for attributes, input is handled by functions which take a specific type.
+/// Since any attribute can have any type of listener, any event can be provided.
+#[derive(Debug, Properties, PartialEq, Clone)]
+pub struct ButtonProps2 {
+    attributes_to_add: HashMap<String, Option<String>>,
+    attributes_to_remove: Vec<String>,
+    listeners_to_add: HashMap<String, EventType>,
+    listeners_to_remove: Vec<String>,
+}
+
+impl super::private::PropsGetterSetter for ButtonProps2 {
+    fn get_props_to_add(&mut self) -> &mut HashMap<String, Option<String>> {
+        &mut self.attributes_to_add
+    }
+
+    fn get_props_to_remove(&mut self) -> &mut Vec<String> {
+        &mut self.attributes_to_remove
+    }
+}
+
+impl super::private::ListenerGetterSetter for ButtonProps2 {
+    fn get_listeners_to_add(&mut self) -> &mut HashMap<String, EventType> {
+        &mut self.listeners_to_add
+    }
+
+    fn get_listeners_to_remove(&mut self) -> &mut Vec<String> {
+        &mut self.listeners_to_remove
+    }
+}
+
+/// A trait to be implemented by any type that accepts button props.
+pub trait ButtonPropsHandler: super::private::PropsGetterSetter {
+    fn add_button_prop(&mut self, prop: ButtonHtmlAttributes) {
+        let key = prop.to_string();
+        let val = match &prop {
+            ButtonHtmlAttributes::AutoFocus => None,
+            ButtonHtmlAttributes::Disabled => None,
+            ButtonHtmlAttributes::Form(val) => Some(val.to_owned()),
+            ButtonHtmlAttributes::FormAction(val) => Some(val.to_owned()),
+            ButtonHtmlAttributes::FormEncType(val) => Some(val.to_owned()),
+            ButtonHtmlAttributes::FormMethod(val) => Some(val.to_owned()),
+            ButtonHtmlAttributes::FormNoValidate => None,
+            ButtonHtmlAttributes::FormTarget(val) => Some(val.to_owned()),
+            ButtonHtmlAttributes::Name(val) => Some(val.to_owned()),
+            ButtonHtmlAttributes::Type(val) => Some(val.to_string()),
+            ButtonHtmlAttributes::Value(val) => Some(val.to_string()),
+        };
+        self.get_props_to_add().insert(key, val);
+    }
+
+    fn remove_button_prop(&mut self, prop: ButtonHtmlAttributes) {
+        self.get_props_to_remove().push(prop.to_string())
+    }
+}
+
+impl ButtonPropsHandler for ButtonProps2 {}
+impl ListenerHandler for ButtonProps2 {}
 
 #[derive(Debug, Properties, PartialEq, Clone)]
 pub struct ButtonProps {

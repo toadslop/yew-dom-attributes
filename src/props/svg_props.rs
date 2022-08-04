@@ -9,7 +9,7 @@ use crate::{
         svg_attributes::{SVGAttributes, SvgAttributeReceiver},
     },
     callback_holder::CallbackHolder,
-    events::{
+    events::events::{
         AnimationEvents, CustomEvent, DragEvents, EventPropsReceiver, FocusEvents, GenericEvents,
         InputEvents, KeyboardEvents, MouseEvents, PointerEvents, ProgressEvents, TouchEvents,
         TransitionEvents, WheelEvents,

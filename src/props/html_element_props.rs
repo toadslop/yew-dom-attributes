@@ -8,7 +8,7 @@ use crate::{
         html_attributes::{HtmlAttributeReceiver, HtmlAttributes},
     },
     callback_holder::CallbackHolder,
-    events::{
+    events::events::{
         AnimationEvents, CustomEvent, DragEvents, EventPropsReceiver, FocusEvents, GenericEvents,
         InputEvents, KeyboardEvents, MouseEvents, PointerEvents, ProgressEvents, TouchEvents,
         TransitionEvents, WheelEvents,
@@ -38,6 +38,8 @@ pub struct HtmlElementProps {
     focuse_event_listeners: CallbackHolder<FocusEvents>,
     custom_listeners: CallbackHolder<CustomEvent>,
 }
+
+impl HtmlElementProps {}
 
 impl HtmlElementProps {
     pub fn new() -> Self {
