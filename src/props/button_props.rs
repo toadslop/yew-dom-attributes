@@ -23,7 +23,7 @@ use super::{
     aria_props::AriaPropsHandler,
     custom_attributes::{CustomAttributeReceiver, CustomAttrs, CustomPropsHandler},
     html_element_props::HtmlElementPropsHandler,
-    ListenerHandler,
+    DomInjector,
 };
 
 /// Second iteration of button props. Streamline down to simply 4 data structures.
@@ -35,6 +35,17 @@ pub struct ButtonProps2 {
     attributes_to_remove: Vec<String>,
     listeners_to_add: HashMap<String, EventType>,
     listeners_to_remove: Vec<String>,
+}
+
+impl ButtonProps2 {
+    pub fn new() -> Self {
+        Self {
+            attributes_to_add: HashMap::new(),
+            attributes_to_remove: Vec::new(),
+            listeners_to_add: HashMap::new(),
+            listeners_to_remove: Vec::new(),
+        }
+    }
 }
 
 impl super::private::PropsGetterSetter for ButtonProps2 {
@@ -86,7 +97,7 @@ impl ButtonPropsHandler for ButtonProps2 {}
 impl AriaPropsHandler for ButtonProps2 {}
 impl HtmlElementPropsHandler for ButtonProps2 {}
 impl CustomPropsHandler for ButtonProps2 {}
-impl ListenerHandler for ButtonProps2 {}
+impl DomInjector for ButtonProps2 {}
 
 //
 //
