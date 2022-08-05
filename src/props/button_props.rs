@@ -1,6 +1,6 @@
 use gloo_events::EventListener;
-use std::collections::HashMap;
-use yew::Properties;
+use std::{collections::HashMap, rc::Rc};
+use yew::{Callback, Properties};
 
 use crate::{
     attribute_holder::AttributeHolder,
@@ -35,15 +35,17 @@ pub struct ButtonProps2 {
     attributes_to_remove: Vec<String>,
     listeners_to_add: HashMap<String, EventType>,
     listeners_to_remove: Vec<String>,
+    on_props_update: Callback<Rc<ButtonProps2>>,
 }
 
 impl ButtonProps2 {
-    pub fn new() -> Self {
+    pub fn new(on_props_update: Callback<Rc<Self>>) -> Self {
         Self {
             attributes_to_add: HashMap::new(),
             attributes_to_remove: Vec::new(),
             listeners_to_add: HashMap::new(),
             listeners_to_remove: Vec::new(),
+            on_props_update,
         }
     }
 }
@@ -97,7 +99,11 @@ impl ButtonPropsHandler for ButtonProps2 {}
 impl AriaPropsHandler for ButtonProps2 {}
 impl HtmlElementPropsHandler for ButtonProps2 {}
 impl CustomPropsHandler for ButtonProps2 {}
-impl DomInjector for ButtonProps2 {}
+impl DomInjector for ButtonProps2 {
+    fn get_props_update_callback(&self) -> &Callback<Rc<Self>> {
+        &self.on_props_update
+    }
+}
 
 //
 //

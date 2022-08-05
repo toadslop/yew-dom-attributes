@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, rc::Rc};
 
 use gloo_events::EventListener;
 use wasm_bindgen::JsCast;
@@ -61,6 +61,8 @@ pub trait DomInjector: private::ListenerGetterSetter + private::PropsGetterSette
     fn get_listener_to_add_count(&mut self) -> usize {
         self.get_listeners_to_add().len()
     }
+
+    fn get_props_update_callback(&self) -> &Callback<Rc<Self>>;
 
     /// The active_listeners parameter should be stored in the host Component so the listeners it contained will be
     /// dropped when that Component is destroyed.
