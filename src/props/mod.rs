@@ -44,6 +44,8 @@ pub trait DynamicListenerComponent {
 /// A trait to be implemented by any element that accepts listeners.
 /// Handles adding and removing listeners as well as injecting them to the DOM.
 pub trait DomInjector: private::ListenerGetterSetter + private::PropsGetterSetter {
+    fn new(on_props_update: Callback<Rc<Self>>) -> Self;
+
     fn add_listener(&mut self, key: String, event_type: EventType) {
         gloo_console::log!("ADDING A LISTNER NOE");
         self.get_listeners_to_add().insert(key, event_type);
@@ -62,6 +64,11 @@ pub trait DomInjector: private::ListenerGetterSetter + private::PropsGetterSette
         self.get_listeners_to_add().len()
     }
 
+    /// This function returns a callback that takes the props struct itelf. This is used
+    /// to pass changes to props struct from the child back up to the parent.
+    /// This is necessary to inform the parent that attributes and listeners were either
+    /// added or removed from the DOM. If this is not used properly, your component will
+    /// not know that it happened and will try again on the next rerender.
     fn get_props_update_callback(&self) -> &Callback<Rc<Self>>;
 
     /// The active_listeners parameter should be stored in the host Component so the listeners it contained will be
@@ -73,30 +80,15 @@ pub trait DomInjector: private::ListenerGetterSetter + private::PropsGetterSette
     ) {
         if let Some(elem) = node_ref.cast::<Element>() {
             let listeners_to_remove = self.get_listeners_to_remove();
-            gloo_console::log!("listeners to remove length before");
-            gloo_console::log!(listeners_to_remove.len());
             remove_listeners(active_listeners, listeners_to_remove);
-            gloo_console::log!("listeners to remove length after");
-            gloo_console::log!(listeners_to_remove.len());
 
             let listeners_to_add = self.get_listeners_to_add();
-            gloo_console::log!("listenrs to add length before");
-            gloo_console::log!(listeners_to_add.len());
-            listeners_to_add
-                .iter()
-                .for_each(|(key, _)| gloo_console::log!(key));
             inject_listeners(&elem, active_listeners, listeners_to_add);
-            gloo_console::log!("listenrs to add length after");
-            gloo_console::log!(listeners_to_add.len());
-            gloo_console::log!("");
 
             let attributes_to_remove = self.get_props_to_remove();
             remove_attributes(&elem, attributes_to_remove);
-            gloo_console::log!("attributes to remove length");
-            gloo_console::log!(attributes_to_remove.len());
+
             let attributes_to_add = self.get_props_to_add();
-            gloo_console::log!("attributes to add length");
-            gloo_console::log!(attributes_to_add.len());
             inject_attributes(&elem, attributes_to_add);
         }
     }

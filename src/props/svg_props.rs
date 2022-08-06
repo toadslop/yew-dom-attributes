@@ -1,196 +1,334 @@
-use gloo_events::EventListener;
-use yew::Properties;
+use std::{collections::HashMap, rc::Rc};
 
-use crate::{
-    attribute_holder::AttributeHolder,
-    attribute_injector::AttributeInjector,
-    attributes::{
-        aria_attributes::{AriaAttributeReceiver, AriaAttributes},
-        svg_attributes::{SVGAttributes, SvgAttributeReceiver},
-    },
-    callback_holder::CallbackHolder,
-    events::events::{
-        AnimationEvents, CustomEvent, DragEvents, EventPropsReceiver, FocusEvents, GenericEvents,
-        InputEvents, KeyboardEvents, MouseEvents, PointerEvents, ProgressEvents, TouchEvents,
-        TransitionEvents, WheelEvents,
-    },
-    listener_injector::{AddListenerError, ListenerInjector},
+use yew::{Callback, Properties};
+
+use crate::{attributes::svg_attributes::SVGAttributes, events::events::EventType};
+
+use super::{
+    aria_props::AriaPropsHandler, custom_attributes::CustomPropsHandler,
+    html_element_props::HtmlElementPropsHandler, DomInjector,
 };
 
-use super::custom_attributes::{CustomAttributeReceiver, CustomAttrs};
-
+/// Properties for a generic Yew components.
 #[derive(Debug, Properties, PartialEq, Clone)]
 pub struct SVGProps {
-    // attributes
-    svg_attributes: AttributeHolder<SVGAttributes>,
-    aria_attributes: AttributeHolder<AriaAttributes>,
-    custom_attributes: CustomAttrs,
-    // event listeners
-    generic_listeners: CallbackHolder<GenericEvents>,
-    mouse_event_listeners: CallbackHolder<MouseEvents>,
-    transition_event_listeners: CallbackHolder<TransitionEvents>,
-    touch_event_listeners: CallbackHolder<TouchEvents>,
-    pointer_event_listeners: CallbackHolder<PointerEvents>,
-    animation_event_listeners: CallbackHolder<AnimationEvents>,
-    wheel_event_listeners: CallbackHolder<WheelEvents>,
-    progress_event_listeners: CallbackHolder<ProgressEvents>,
-    keyboard_event_listeners: CallbackHolder<KeyboardEvents>,
-    input_event_listeners: CallbackHolder<InputEvents>,
-    drag_event_listeners: CallbackHolder<DragEvents>,
-    focuse_event_listeners: CallbackHolder<FocusEvents>,
-    custom_listeners: CallbackHolder<CustomEvent>,
+    attributes_to_add: HashMap<String, Option<String>>,
+    attributes_to_remove: Vec<String>,
+    listeners_to_add: HashMap<String, EventType>,
+    listeners_to_remove: Vec<String>,
+    /// A callback used to pass changes to button props from the child back up to the parent.
+    /// This is necessary to inform the parent that attributes and listeners were either
+    /// added or removed from the DOM. If this is not used properly, your component will
+    /// not know that it happened and will try again on the next rerender.
+    on_props_update: Callback<Rc<SVGProps>>,
 }
 
-impl SvgAttributeReceiver for SVGProps {
-    fn add_svg_attribute(&mut self, attribute: SVGAttributes) -> bool {
-        self.svg_attributes.add_attribute(attribute)
+impl super::private::PropsGetterSetter for SVGProps {
+    fn get_props_to_add(&mut self) -> &mut HashMap<String, Option<String>> {
+        &mut self.attributes_to_add
     }
 
-    fn remove_svg_attribute(&mut self, attribute: SVGAttributes) -> bool {
-        self.svg_attributes.remove_attribute(attribute)
+    fn get_props_to_remove(&mut self) -> &mut Vec<String> {
+        &mut self.attributes_to_remove
     }
 }
 
-impl AriaAttributeReceiver for SVGProps {
-    fn add_aria_attribute(&mut self, attribute: AriaAttributes) -> bool {
-        self.aria_attributes.add_attribute(attribute)
+impl super::private::ListenerGetterSetter for SVGProps {
+    fn get_listeners_to_add(&mut self) -> &mut HashMap<String, EventType> {
+        &mut self.listeners_to_add
     }
 
-    fn remove_aria_attribute(&mut self, attribute: AriaAttributes) -> bool {
-        self.aria_attributes.remove_attribute(attribute)
-    }
-}
-
-impl CustomAttributeReceiver for SVGProps {
-    fn add_attribute(&mut self, key: String, value: String) -> bool {
-        self.custom_attributes.add_attribute(key, value)
-    }
-
-    fn remove_attribute(&mut self, key: String) -> bool {
-        self.custom_attributes.remove_attribute(key)
-    }
-
-    fn add_boolean_attribute(&mut self, key: String) -> bool {
-        self.custom_attributes.add_boolean_attribute(key)
+    fn get_listeners_to_remove(&mut self) -> &mut Vec<String> {
+        &mut self.listeners_to_remove
     }
 }
 
-impl EventPropsReceiver for SVGProps {
-    fn add_generic_listener(&mut self, callback: GenericEvents) {
-        self.generic_listeners.add_callback(callback)
+/// A trait to be implemented by any type that accepts button props.
+pub trait ButtonPropsHandler: super::private::PropsGetterSetter {
+    fn add_button_prop(&mut self, prop: SVGAttributes) {
+        let key = prop.to_string();
+        let val = match &prop {
+            SVGAttributes::Color(val) => Some(val.to_string()),
+            SVGAttributes::Height(val) => Some(val.to_string()),
+            SVGAttributes::Id(val) => Some(val.to_string()),
+            SVGAttributes::Lang(val) => Some(val.to_string()),
+            SVGAttributes::Max(val) => Some(val.to_string()),
+            SVGAttributes::Media(val) => Some(val.to_string()),
+            SVGAttributes::Method(val) => Some(val.to_string()),
+            SVGAttributes::Min(val) => Some(val.to_string()),
+            SVGAttributes::Name(val) => Some(val.to_string()),
+            SVGAttributes::Target(val) => Some(val.to_string()),
+            SVGAttributes::Type(val) => Some(val.to_string()),
+            SVGAttributes::Width(val) => Some(val.to_string()),
+            SVGAttributes::Role(val) => Some(val.to_string()),
+            SVGAttributes::TabIndex(val) => Some(val.to_string()),
+            SVGAttributes::CrossOrigin(val) => Some(val.to_string()),
+            SVGAttributes::AccentHeight(val) => Some(val.to_string()),
+            SVGAttributes::Accumulate(val) => Some(val.to_string()),
+            SVGAttributes::Additive(val) => Some(val.to_string()),
+            SVGAttributes::AlignmentBaseline(val) => Some(val.to_string()),
+            SVGAttributes::AllowReorder(val) => Some(val.to_string()),
+            SVGAttributes::Alphabetic(val) => Some(val.to_string()),
+            SVGAttributes::Amplitude(val) => Some(val.to_string()),
+            SVGAttributes::ArabicForm(val) => Some(val.to_string()),
+            SVGAttributes::Ascent(val) => Some(val.to_string()),
+            SVGAttributes::AttributeName(val) => Some(val.to_string()),
+            SVGAttributes::AttributeType(val) => Some(val.to_string()),
+            SVGAttributes::AutoReverse(val) => Some(val.to_string()),
+            SVGAttributes::Azimuth(val) => Some(val.to_string()),
+            SVGAttributes::BaseFrequency(val) => Some(val.to_string()),
+            SVGAttributes::BaselineShift(val) => Some(val.to_string()),
+            SVGAttributes::BaseProfile(val) => Some(val.to_string()),
+            SVGAttributes::Bbox(val) => Some(val.to_string()),
+            SVGAttributes::Begin(val) => Some(val.to_string()),
+            SVGAttributes::Bias(val) => Some(val.to_string()),
+            SVGAttributes::By(val) => Some(val.to_string()),
+            SVGAttributes::CalcMode(val) => Some(val.to_string()),
+            SVGAttributes::CapHeight(val) => Some(val.to_string()),
+            SVGAttributes::Clip(val) => Some(val.to_string()),
+            SVGAttributes::ClipPath(val) => Some(val.to_string()),
+            SVGAttributes::ClipPathUnits(val) => Some(val.to_string()),
+            SVGAttributes::ClipRule(val) => Some(val.to_string()),
+            SVGAttributes::ColorInterpolation(val) => Some(val.to_string()),
+            SVGAttributes::ColorInterpolationFilters(val) => Some(val.to_string()),
+            SVGAttributes::ColorProfile(val) => Some(val.to_string()),
+            SVGAttributes::ColorRendering(val) => Some(val.to_string()),
+            SVGAttributes::ContentScriptType(val) => Some(val.to_string()),
+            SVGAttributes::ContentStyleType(val) => Some(val.to_string()),
+            SVGAttributes::Cursor(val) => Some(val.to_string()),
+            SVGAttributes::Cx(val) => Some(val.to_string()),
+            SVGAttributes::Cy(val) => Some(val.to_string()),
+            SVGAttributes::D(val) => Some(val.to_string()),
+            SVGAttributes::Decelerate(val) => Some(val.to_string()),
+            SVGAttributes::Descent(val) => Some(val.to_string()),
+            SVGAttributes::DiffuseConstant(val) => Some(val.to_string()),
+            SVGAttributes::Direction(val) => Some(val.to_string()),
+            SVGAttributes::Display(val) => Some(val.to_string()),
+            SVGAttributes::Divisor(val) => Some(val.to_string()),
+            SVGAttributes::DominantBaseline(val) => Some(val.to_string()),
+            SVGAttributes::Dur(val) => Some(val.to_string()),
+            SVGAttributes::Dx(val) => Some(val.to_string()),
+            SVGAttributes::Dy(val) => Some(val.to_string()),
+            SVGAttributes::EdgeMode(val) => Some(val.to_string()),
+            SVGAttributes::Elevation(val) => Some(val.to_string()),
+            SVGAttributes::EnableBackground(val) => Some(val.to_string()),
+            SVGAttributes::End(val) => Some(val.to_string()),
+            SVGAttributes::Exponent(val) => Some(val.to_string()),
+            SVGAttributes::ExternalResourcesRequired(val) => Some(val.to_string()),
+            SVGAttributes::Fill(val) => Some(val.to_string()),
+            SVGAttributes::FillOpacity(val) => Some(val.to_string()),
+            SVGAttributes::FillRule(val) => Some(val.to_string()),
+            SVGAttributes::Filter(val) => Some(val.to_string()),
+            SVGAttributes::FilterRes(val) => Some(val.to_string()),
+            SVGAttributes::FilterUnits(val) => Some(val.to_string()),
+            SVGAttributes::FloodColor(val) => Some(val.to_string()),
+            SVGAttributes::FloodOpacity(val) => Some(val.to_string()),
+            SVGAttributes::Focusable(val) => Some(val.to_string()),
+            SVGAttributes::FontFamily(val) => Some(val.to_string()),
+            SVGAttributes::FontSize(val) => Some(val.to_string()),
+            SVGAttributes::FontSizeAdjust(val) => Some(val.to_string()),
+            SVGAttributes::FontStretch(val) => Some(val.to_string()),
+            SVGAttributes::FontStyle(val) => Some(val.to_string()),
+            SVGAttributes::FontVariant(val) => Some(val.to_string()),
+            SVGAttributes::FontWeight(val) => Some(val.to_string()),
+            SVGAttributes::Format(val) => Some(val.to_string()),
+            SVGAttributes::Fr(val) => Some(val.to_string()),
+            SVGAttributes::From(val) => Some(val.to_string()),
+            SVGAttributes::Fx(val) => Some(val.to_string()),
+            SVGAttributes::Fy(val) => Some(val.to_string()),
+            SVGAttributes::G1(val) => Some(val.to_string()),
+            SVGAttributes::G2(val) => Some(val.to_string()),
+            SVGAttributes::GlyphName(val) => Some(val.to_string()),
+            SVGAttributes::GlyphOrientationHorizontal(val) => Some(val.to_string()),
+            SVGAttributes::GlyphOrientationVertical(val) => Some(val.to_string()),
+            SVGAttributes::GlyphRef(val) => Some(val.to_string()),
+            SVGAttributes::GradientTransform(val) => Some(val.to_string()),
+            SVGAttributes::GradientUnits(val) => Some(val.to_string()),
+            SVGAttributes::Hanging(val) => Some(val.to_string()),
+            SVGAttributes::HorizAdvX(val) => Some(val.to_string()),
+            SVGAttributes::HorizOriginX(val) => Some(val.to_string()),
+            SVGAttributes::Href(val) => Some(val.to_string()),
+            SVGAttributes::Ideographic(val) => Some(val.to_string()),
+            SVGAttributes::ImageRendering(val) => Some(val.to_string()),
+            SVGAttributes::In2(val) => Some(val.to_string()),
+            SVGAttributes::In(val) => Some(val.to_string()),
+            SVGAttributes::Intercept(val) => Some(val.to_string()),
+            SVGAttributes::K1(val) => Some(val.to_string()),
+            SVGAttributes::K2(val) => Some(val.to_string()),
+            SVGAttributes::K3(val) => Some(val.to_string()),
+            SVGAttributes::K4(val) => Some(val.to_string()),
+            SVGAttributes::K(val) => Some(val.to_string()),
+            SVGAttributes::KernelMatrix(val) => Some(val.to_string()),
+            SVGAttributes::KernelUnitLength(val) => Some(val.to_string()),
+            SVGAttributes::Kerning(val) => Some(val.to_string()),
+            SVGAttributes::KeyPoints(val) => Some(val.to_string()),
+            SVGAttributes::KeySplines(val) => Some(val.to_string()),
+            SVGAttributes::KeyTimes(val) => Some(val.to_string()),
+            SVGAttributes::LengthAdjust(val) => Some(val.to_string()),
+            SVGAttributes::LetterSpacing(val) => Some(val.to_string()),
+            SVGAttributes::LightingColor(val) => Some(val.to_string()),
+            SVGAttributes::LimitingConeAngle(val) => Some(val.to_string()),
+            SVGAttributes::Local(val) => Some(val.to_string()),
+            SVGAttributes::MarkerEnd(val) => Some(val.to_string()),
+            SVGAttributes::MarkerHeight(val) => Some(val.to_string()),
+            SVGAttributes::MarkerMid(val) => Some(val.to_string()),
+            SVGAttributes::MarkerStart(val) => Some(val.to_string()),
+            SVGAttributes::MarkerUnits(val) => Some(val.to_string()),
+            SVGAttributes::MarkerWidth(val) => Some(val.to_string()),
+            SVGAttributes::Mask(val) => Some(val.to_string()),
+            SVGAttributes::MaskContentUnits(val) => Some(val.to_string()),
+            SVGAttributes::MaskUnits(val) => Some(val.to_string()),
+            SVGAttributes::Mathematical(val) => Some(val.to_string()),
+            SVGAttributes::Mode(val) => Some(val.to_string()),
+            SVGAttributes::NumOctaves(val) => Some(val.to_string()),
+            SVGAttributes::Offset(val) => Some(val.to_string()),
+            SVGAttributes::Opacity(val) => Some(val.to_string()),
+            SVGAttributes::Operator(val) => Some(val.to_string()),
+            SVGAttributes::Order(val) => Some(val.to_string()),
+            SVGAttributes::Orient(val) => Some(val.to_string()),
+            SVGAttributes::Orientation(val) => Some(val.to_string()),
+            SVGAttributes::Origin(val) => Some(val.to_string()),
+            SVGAttributes::Overflow(val) => Some(val.to_string()),
+            SVGAttributes::OverlinePosition(val) => Some(val.to_string()),
+            SVGAttributes::PverlineThickness(val) => Some(val.to_string()),
+            SVGAttributes::PaintOrder(val) => Some(val.to_string()),
+            SVGAttributes::Panose1(val) => Some(val.to_string()),
+            SVGAttributes::Path(val) => Some(val.to_string()),
+            SVGAttributes::PathLength(val) => Some(val.to_string()),
+            SVGAttributes::PatternContentUnits(val) => Some(val.to_string()),
+            SVGAttributes::PatternTransform(val) => Some(val.to_string()),
+            SVGAttributes::PatternUnits(val) => Some(val.to_string()),
+            SVGAttributes::PointerEvents(val) => Some(val.to_string()),
+            SVGAttributes::Points(val) => Some(val.to_string()),
+            SVGAttributes::PointsAtX(val) => Some(val.to_string()),
+            SVGAttributes::PointsAtY(val) => Some(val.to_string()),
+            SVGAttributes::PointsAtZ(val) => Some(val.to_string()),
+            SVGAttributes::PreserveAlpha(val) => Some(val.to_string()),
+            SVGAttributes::OreserveAspectRatio(val) => Some(val.to_string()),
+            SVGAttributes::PrimitiveUnits(val) => Some(val.to_string()),
+            SVGAttributes::R(val) => Some(val.to_string()),
+            SVGAttributes::Radius(val) => Some(val.to_string()),
+            SVGAttributes::RefX(val) => Some(val.to_string()),
+            SVGAttributes::RefY(val) => Some(val.to_string()),
+            SVGAttributes::RenderingIntent(val) => Some(val.to_string()),
+            SVGAttributes::RepeatCount(val) => Some(val.to_string()),
+            SVGAttributes::RepeatDur(val) => Some(val.to_string()),
+            SVGAttributes::RequiredExtensions(val) => Some(val.to_string()),
+            SVGAttributes::RequiredFeatures(val) => Some(val.to_string()),
+            SVGAttributes::Restart(val) => Some(val.to_string()),
+            SVGAttributes::Result(val) => Some(val.to_string()),
+            SVGAttributes::Rotate(val) => Some(val.to_string()),
+            SVGAttributes::Rx(val) => Some(val.to_string()),
+            SVGAttributes::Ry(val) => Some(val.to_string()),
+            SVGAttributes::Scale(val) => Some(val.to_string()),
+            SVGAttributes::Seed(val) => Some(val.to_string()),
+            SVGAttributes::ShapeRendering(val) => Some(val.to_string()),
+            SVGAttributes::Slope(val) => Some(val.to_string()),
+            SVGAttributes::Spacing(val) => Some(val.to_string()),
+            SVGAttributes::SpecularConstant(val) => Some(val.to_string()),
+            SVGAttributes::SpecularExponent(val) => Some(val.to_string()),
+            SVGAttributes::Speed(val) => Some(val.to_string()),
+            SVGAttributes::SpreadMethod(val) => Some(val.to_string()),
+            SVGAttributes::StartOffset(val) => Some(val.to_string()),
+            SVGAttributes::StdDeviation(val) => Some(val.to_string()),
+            SVGAttributes::Stemh(val) => Some(val.to_string()),
+            SVGAttributes::Stemv(val) => Some(val.to_string()),
+            SVGAttributes::StitchTiles(val) => Some(val.to_string()),
+            SVGAttributes::StopColor(val) => Some(val.to_string()),
+            SVGAttributes::StopOpacity(val) => Some(val.to_string()),
+            SVGAttributes::StrikethroughPosition(val) => Some(val.to_string()),
+            SVGAttributes::StrikethroughThickness(val) => Some(val.to_string()),
+            SVGAttributes::String(val) => Some(val.to_string()),
+            SVGAttributes::Stroke(val) => Some(val.to_string()),
+            SVGAttributes::StrokeDasharray(val) => Some(val.to_string()),
+            SVGAttributes::StrokeDashoffset(val) => Some(val.to_string()),
+            SVGAttributes::StrokeLinecap(val) => Some(val.to_string()),
+            SVGAttributes::StrokeLinejoin(val) => Some(val.to_string()),
+            SVGAttributes::StrokeMiterlimit(val) => Some(val.to_string()),
+            SVGAttributes::StrokeOpacity(val) => Some(val.to_string()),
+            SVGAttributes::StrokeWidth(val) => Some(val.to_string()),
+            SVGAttributes::SurfaceScale(val) => Some(val.to_string()),
+            SVGAttributes::SystemLanguage(val) => Some(val.to_string()),
+            SVGAttributes::TableValues(val) => Some(val.to_string()),
+            SVGAttributes::TargetX(val) => Some(val.to_string()),
+            SVGAttributes::TargetY(val) => Some(val.to_string()),
+            SVGAttributes::TextAnchor(val) => Some(val.to_string()),
+            SVGAttributes::TextDecoration(val) => Some(val.to_string()),
+            SVGAttributes::TextLength(val) => Some(val.to_string()),
+            SVGAttributes::TextRendering(val) => Some(val.to_string()),
+            SVGAttributes::To(val) => Some(val.to_string()),
+            SVGAttributes::Transform(val) => Some(val.to_string()),
+            SVGAttributes::U1(val) => Some(val.to_string()),
+            SVGAttributes::U2(val) => Some(val.to_string()),
+            SVGAttributes::EnderlinePosition(val) => Some(val.to_string()),
+            SVGAttributes::UnderlineThickness(val) => Some(val.to_string()),
+            SVGAttributes::Unicode(val) => Some(val.to_string()),
+            SVGAttributes::UnicodeBidi(val) => Some(val.to_string()),
+            SVGAttributes::UnicodeRange(val) => Some(val.to_string()),
+            SVGAttributes::UnitsPerEm(val) => Some(val.to_string()),
+            SVGAttributes::VAlphabetic(val) => Some(val.to_string()),
+            SVGAttributes::Values(val) => Some(val.to_string()),
+            SVGAttributes::VectorEffect(val) => Some(val.to_string()),
+            SVGAttributes::Version(val) => Some(val.to_string()),
+            SVGAttributes::VertAdvY(val) => Some(val.to_string()),
+            SVGAttributes::VertOriginX(val) => Some(val.to_string()),
+            SVGAttributes::VertOriginY(val) => Some(val.to_string()),
+            SVGAttributes::VHanging(val) => Some(val.to_string()),
+            SVGAttributes::VIdeographic(val) => Some(val.to_string()),
+            SVGAttributes::SiewBox(val) => Some(val.to_string()),
+            SVGAttributes::ViewTarget(val) => Some(val.to_string()),
+            SVGAttributes::Visibility(val) => Some(val.to_string()),
+            SVGAttributes::VMathematical(val) => Some(val.to_string()),
+            SVGAttributes::Widths(val) => Some(val.to_string()),
+            SVGAttributes::WordSpacing(val) => Some(val.to_string()),
+            SVGAttributes::WritingMode(val) => Some(val.to_string()),
+            SVGAttributes::X1(val) => Some(val.to_string()),
+            SVGAttributes::X2(val) => Some(val.to_string()),
+            SVGAttributes::X(val) => Some(val.to_string()),
+            SVGAttributes::XChannelSelector(val) => Some(val.to_string()),
+            SVGAttributes::XHeight(val) => Some(val.to_string()),
+            SVGAttributes::XlinkActuate(val) => Some(val.to_string()),
+            SVGAttributes::XlinkArcrole(val) => Some(val.to_string()),
+            SVGAttributes::XlinkHref(val) => Some(val.to_string()),
+            SVGAttributes::XlinkRole(val) => Some(val.to_string()),
+            SVGAttributes::XlinkShow(val) => Some(val.to_string()),
+            SVGAttributes::XlinkTitle(val) => Some(val.to_string()),
+            SVGAttributes::XlinkType(val) => Some(val.to_string()),
+            SVGAttributes::XmlBase(val) => Some(val.to_string()),
+            SVGAttributes::XmlLang(val) => Some(val.to_string()),
+            SVGAttributes::Xmlns(val) => Some(val.to_string()),
+            SVGAttributes::XmlnsXlink(val) => Some(val.to_string()),
+            SVGAttributes::XmlSpace(val) => Some(val.to_string()),
+            SVGAttributes::Y1(val) => Some(val.to_string()),
+            SVGAttributes::Y2(val) => Some(val.to_string()),
+            SVGAttributes::Y(val) => Some(val.to_string()),
+            SVGAttributes::YChannelSelector(val) => Some(val.to_string()),
+            SVGAttributes::Z(val) => Some(val.to_string()),
+            SVGAttributes::ZoomAndPan(val) => Some(val.to_string()),
+        };
+        self.get_props_to_add().insert(key, val);
     }
 
-    fn add_mouse_event_listener(&mut self, callback: MouseEvents) {
-        self.mouse_event_listeners.add_callback(callback)
-    }
-
-    fn add_custom_listener(&mut self, callback: CustomEvent) {
-        self.custom_listeners.add_callback(callback)
-    }
-
-    fn add_transition_event_listener(&mut self, callback: TransitionEvents) {
-        self.transition_event_listeners.add_callback(callback)
-    }
-
-    fn add_touch_event_listener(&mut self, callback: TouchEvents) {
-        self.touch_event_listeners.add_callback(callback)
-    }
-
-    fn add_animation_event_listener(&mut self, callback: AnimationEvents) {
-        self.animation_event_listeners.add_callback(callback)
-    }
-
-    fn add_pointer_event_listener(&mut self, callback: PointerEvents) {
-        self.pointer_event_listeners.add_callback(callback)
-    }
-
-    fn add_wheel_event_listener(&mut self, callback: WheelEvents) {
-        self.wheel_event_listeners.add_callback(callback)
-    }
-
-    fn add_progress_event_listener(&mut self, callback: ProgressEvents) {
-        self.progress_event_listeners.add_callback(callback)
-    }
-
-    fn add_keyboard_event_listener(&mut self, callback: KeyboardEvents) {
-        self.keyboard_event_listeners.add_callback(callback)
-    }
-
-    fn add_drag_event_listener(&mut self, callback: DragEvents) {
-        self.drag_event_listeners.add_callback(callback)
-    }
-
-    fn add_input_event_listener(&mut self, callback: InputEvents) {
-        self.input_event_listeners.add_callback(callback)
-    }
-
-    fn add_focus_event_listeners(&mut self, callback: FocusEvents) {
-        self.focuse_event_listeners.add_callback(callback)
+    fn remove_button_prop(&mut self, prop: SVGAttributes) {
+        self.get_props_to_remove().push(prop.to_string())
     }
 }
 
-impl AttributeInjector for SVGProps {
-    fn inject(
-        &mut self,
-        node_ref: &yew::NodeRef,
-    ) -> Result<(), crate::attribute_injector::SetAttributeError> {
-        self.aria_attributes.inject(node_ref)?;
-        self.custom_attributes.inject(node_ref)?;
-        Ok(())
+impl AriaPropsHandler for SVGProps {}
+impl HtmlElementPropsHandler for SVGProps {}
+impl CustomPropsHandler for SVGProps {}
+impl DomInjector for SVGProps {
+    fn new(on_props_update: Callback<Rc<Self>>) -> Self {
+        Self {
+            attributes_to_add: HashMap::new(),
+            attributes_to_remove: Vec::new(),
+            listeners_to_add: HashMap::new(),
+            listeners_to_remove: Vec::new(),
+            on_props_update,
+        }
     }
-}
 
-impl ListenerInjector for SVGProps {
-    fn inject_listeners(
-        &mut self,
-        node_ref: &yew::NodeRef,
-    ) -> Result<Vec<EventListener>, AddListenerError> {
-        let mut listeners = Vec::new();
-
-        let mouse_listeners = &mut self.mouse_event_listeners.inject_listeners(node_ref)?;
-        listeners.append(mouse_listeners);
-
-        let generic_listeners = &mut self.generic_listeners.inject_listeners(node_ref)?;
-        listeners.append(generic_listeners);
-
-        let custom_listeners = &mut self.custom_listeners.inject_listeners(node_ref)?;
-        listeners.append(custom_listeners);
-
-        let transition_event_listeners =
-            &mut self.transition_event_listeners.inject_listeners(node_ref)?;
-        listeners.append(transition_event_listeners);
-
-        let touch_event_listeners = &mut self.touch_event_listeners.inject_listeners(node_ref)?;
-        listeners.append(touch_event_listeners);
-
-        let animation_event_listeners =
-            &mut self.animation_event_listeners.inject_listeners(node_ref)?;
-        listeners.append(animation_event_listeners);
-
-        let pointer_event_listeners =
-            &mut self.pointer_event_listeners.inject_listeners(node_ref)?;
-        listeners.append(pointer_event_listeners);
-
-        let wheel_event_listeners = &mut self.wheel_event_listeners.inject_listeners(node_ref)?;
-        listeners.append(wheel_event_listeners);
-
-        let progress_event_listeners =
-            &mut self.progress_event_listeners.inject_listeners(node_ref)?;
-        listeners.append(progress_event_listeners);
-
-        let keyboard_event_listeners =
-            &mut self.keyboard_event_listeners.inject_listeners(node_ref)?;
-        listeners.append(keyboard_event_listeners);
-
-        let drag_event_listeners = &mut self.drag_event_listeners.inject_listeners(node_ref)?;
-        listeners.append(drag_event_listeners);
-
-        let input_event_listeners = &mut self.input_event_listeners.inject_listeners(node_ref)?;
-        listeners.append(input_event_listeners);
-
-        let focuse_event_listeners = &mut self.focuse_event_listeners.inject_listeners(node_ref)?;
-        listeners.append(focuse_event_listeners);
-
-        Ok(listeners)
+    fn get_props_update_callback(&self) -> &Callback<Rc<Self>> {
+        &self.on_props_update
     }
 }
