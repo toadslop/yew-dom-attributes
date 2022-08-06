@@ -1,7 +1,8 @@
+use domatt::{Attribute, ButtonHtmlAttributes};
 use std::{collections::HashMap, rc::Rc};
 use yew::{Callback, Properties};
 
-use crate::{attributes::button_html_attributes::ButtonHtmlAttributes, events::events::EventType};
+use crate::events::events::EventType;
 
 use super::{
     aria_props::AriaPropsHandler, custom_attributes::CustomPropsHandler,
@@ -45,20 +46,8 @@ impl super::private::ListenerGetterSetter for ButtonProps {
 /// A trait to be implemented by any type that accepts button props.
 pub trait ButtonPropsHandler: super::private::PropsGetterSetter {
     fn add_button_prop(&mut self, prop: ButtonHtmlAttributes) {
-        let key = prop.to_string();
-        let val = match &prop {
-            ButtonHtmlAttributes::AutoFocus => None,
-            ButtonHtmlAttributes::Disabled => None,
-            ButtonHtmlAttributes::Form(val) => Some(val.to_owned()),
-            ButtonHtmlAttributes::FormAction(val) => Some(val.to_owned()),
-            ButtonHtmlAttributes::FormEncType(val) => Some(val.to_owned()),
-            ButtonHtmlAttributes::FormMethod(val) => Some(val.to_owned()),
-            ButtonHtmlAttributes::FormNoValidate => None,
-            ButtonHtmlAttributes::FormTarget(val) => Some(val.to_owned()),
-            ButtonHtmlAttributes::Name(val) => Some(val.to_owned()),
-            ButtonHtmlAttributes::Type(val) => Some(val.to_string()),
-            ButtonHtmlAttributes::Value(val) => Some(val.to_string()),
-        };
+        let key = prop.get_key();
+        let val = prop.get_val();
         self.get_props_to_add().insert(key, val);
     }
 
@@ -71,6 +60,7 @@ impl ButtonPropsHandler for ButtonProps {}
 impl AriaPropsHandler for ButtonProps {}
 impl HtmlElementPropsHandler for ButtonProps {}
 impl CustomPropsHandler for ButtonProps {}
+
 impl DomInjector for ButtonProps {
     fn new(on_props_update: Callback<Rc<Self>>) -> Self {
         Self {

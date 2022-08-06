@@ -1,11 +1,9 @@
 use std::{collections::HashMap, rc::Rc};
 
+use domatt::{Attribute, HtmlAttributes};
 use yew::{Callback, Properties};
 
-use crate::{
-    attributes::{aria_attributes::AriaAttributes, html_attributes::HtmlAttributes},
-    events::events::EventType,
-};
+use crate::events::events::EventType;
 
 use super::{aria_props::AriaPropsHandler, custom_attributes::CustomPropsHandler, DomInjector};
 
@@ -26,50 +24,12 @@ pub struct HtmlElementProps {
 /// A trait to be implemented by any type that accepts button props.
 pub trait HtmlElementPropsHandler: super::private::PropsGetterSetter {
     fn add_html_prop(&mut self, prop: HtmlAttributes) {
-        let key = prop.to_string();
-        let val = match &prop {
-            HtmlAttributes::AccessKey(val) => Some(val.to_string()),
-            HtmlAttributes::ContentEditable(val) => Some(val.to_string()),
-            HtmlAttributes::ContextMenu(val) => Some(val.to_string()),
-            HtmlAttributes::Dir(val) => Some(val.to_string()),
-            HtmlAttributes::Draggable(val) => Some(val.to_string()),
-            HtmlAttributes::Hidden(val) => Some(val.to_string()),
-            HtmlAttributes::Id(val) => Some(val.to_string()),
-            HtmlAttributes::Lang(val) => Some(val.to_string()),
-            HtmlAttributes::Placeholder(val) => Some(val.to_string()),
-            HtmlAttributes::Slot(val) => Some(val.to_string()),
-            HtmlAttributes::SpellCheck(val) => Some(val.to_string()),
-            HtmlAttributes::TabIndex(val) => Some(val.to_string()),
-            HtmlAttributes::Title(val) => Some(val.to_string()),
-            HtmlAttributes::Translate(val) => Some(val.to_string()),
-            HtmlAttributes::Role(val) => Some(val.to_string()),
-            HtmlAttributes::About(val) => Some(val.to_string()),
-            HtmlAttributes::Datatype(val) => Some(val.to_string()),
-            HtmlAttributes::Inlist(val) => Some(val.to_string()),
-            HtmlAttributes::Prefix(val) => Some(val.to_string()),
-            HtmlAttributes::Property(val) => Some(val.to_string()),
-            HtmlAttributes::Resource(val) => Some(val.to_string()),
-            HtmlAttributes::Typeof(val) => Some(val.to_string()),
-            HtmlAttributes::Vocab(val) => Some(val.to_string()),
-            HtmlAttributes::AutoCapitalize(val) => Some(val.to_string()),
-            HtmlAttributes::AutoCorrect(val) => Some(val.to_string()),
-            HtmlAttributes::AutoSave(val) => Some(val.to_string()),
-            HtmlAttributes::Color(val) => Some(val.to_string()),
-            HtmlAttributes::ItemProp(val) => Some(val.to_string()),
-            HtmlAttributes::ItemScope(val) => Some(val.to_string()),
-            HtmlAttributes::ItemType(val) => Some(val.to_string()),
-            HtmlAttributes::ItemID(val) => Some(val.to_string()),
-            HtmlAttributes::ItemRef(val) => Some(val.to_string()),
-            HtmlAttributes::Results(val) => Some(val.to_string()),
-            HtmlAttributes::Security(val) => Some(val.to_string()),
-            HtmlAttributes::Unselectable(val) => Some(val.to_string()),
-            HtmlAttributes::InputMode(val) => Some(val.to_string()),
-            HtmlAttributes::Is(val) => Some(val.to_string()),
-        };
+        let key = prop.get_key();
+        let val = prop.get_val();
         self.get_props_to_add().insert(key, val);
     }
 
-    fn remove_html_prop(&mut self, prop: AriaAttributes) {
+    fn remove_html_prop(&mut self, prop: HtmlAttributes) {
         self.get_props_to_remove().push(prop.to_string())
     }
 }

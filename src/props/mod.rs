@@ -48,6 +48,7 @@ pub trait DomInjector: private::ListenerGetterSetter + private::PropsGetterSette
 
     fn add_listener(&mut self, key: String, event_type: EventType) {
         gloo_console::log!("ADDING A LISTNER NOE");
+        gloo_console::log!(key.clone());
         self.get_listeners_to_add().insert(key, event_type);
     }
 

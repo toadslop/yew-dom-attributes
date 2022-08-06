@@ -1,5 +1,5 @@
-use crate::callback_holder;
 use strum::Display;
+use wasm_bindgen::JsCast;
 use web_sys::{
     AnimationEvent, DragEvent, FocusEvent, InputEvent, KeyboardEvent, MouseEvent, PointerEvent,
     ProgressEvent, TouchEvent, TransitionEvent, WheelEvent,
@@ -70,7 +70,7 @@ pub enum GenericEvents {
     PointerLockError(Callback<html::onpointerlockerror::Event>),
 }
 
-impl callback_holder::Callback for GenericEvents {
+impl EventCallback for GenericEvents {
     type Event = web_sys::Event;
 
     fn get_event_type(&self) -> String {
@@ -141,7 +141,7 @@ pub enum MouseEvents {
     MouseUp(Callback<html::onmouseup::Event>),
 }
 
-impl callback_holder::Callback for MouseEvents {
+impl EventCallback for MouseEvents {
     type Event = MouseEvent;
 
     fn get_event_type(&self) -> String {
@@ -174,7 +174,7 @@ pub enum FocusEvents {
     Submit(Callback<html::onsubmit::Event>),
 }
 
-impl callback_holder::Callback for FocusEvents {
+impl EventCallback for FocusEvents {
     type Event = FocusEvent;
 
     fn get_event_type(&self) -> String {
@@ -205,7 +205,7 @@ pub enum DragEvents {
     Drop(Callback<html::ondrop::Event>),
 }
 
-impl callback_holder::Callback for DragEvents {
+impl EventCallback for DragEvents {
     type Event = DragEvent;
 
     fn get_event_type(&self) -> String {
@@ -232,7 +232,7 @@ pub enum InputEvents {
     Input(Callback<html::oninput::Event>),
 }
 
-impl callback_holder::Callback for InputEvents {
+impl EventCallback for InputEvents {
     type Event = InputEvent;
 
     fn get_event_type(&self) -> String {
@@ -254,7 +254,7 @@ pub enum KeyboardEvents {
     KeyUp(Callback<html::onkeyup::Event>),
 }
 
-impl callback_holder::Callback for KeyboardEvents {
+impl EventCallback for KeyboardEvents {
     type Event = KeyboardEvent;
 
     fn get_event_type(&self) -> String {
@@ -278,7 +278,7 @@ pub enum ProgressEvents {
     Loadend(Callback<html::onloadend::Event>),
 }
 
-impl callback_holder::Callback for ProgressEvents {
+impl EventCallback for ProgressEvents {
     type Event = ProgressEvent;
 
     fn get_event_type(&self) -> String {
@@ -300,7 +300,7 @@ pub enum WheelEvents {
     Wheel(Callback<html::onwheel::Event>),
 }
 
-impl callback_holder::Callback for WheelEvents {
+impl EventCallback for WheelEvents {
     type Event = WheelEvent;
 
     fn get_event_type(&self) -> String {
@@ -323,7 +323,7 @@ pub enum AnimationEvents {
     AnimationStart(Callback<html::onanimationstart::Event>),
 }
 
-impl callback_holder::Callback for AnimationEvents {
+impl EventCallback for AnimationEvents {
     type Event = AnimationEvent;
 
     fn get_event_type(&self) -> String {
@@ -355,7 +355,7 @@ pub enum PointerEvents {
     PointerUp(Callback<html::onpointerup::Event>),
 }
 
-impl callback_holder::Callback for PointerEvents {
+impl EventCallback for PointerEvents {
     type Event = PointerEvent;
 
     fn get_event_type(&self) -> String {
@@ -387,7 +387,7 @@ pub enum TouchEvents {
     TouchStart(Callback<html::ontouchstart::Event>),
 }
 
-impl callback_holder::Callback for TouchEvents {
+impl EventCallback for TouchEvents {
     type Event = TouchEvent;
 
     fn get_event_type(&self) -> String {
@@ -413,7 +413,7 @@ pub enum TransitionEvents {
     TransitionStart(Callback<html::ontransitionstart::Event>),
 }
 
-impl callback_holder::Callback for TransitionEvents {
+impl EventCallback for TransitionEvents {
     type Event = TransitionEvent;
 
     fn get_event_type(&self) -> String {
@@ -455,7 +455,7 @@ impl CustomEvent {
     }
 }
 
-impl callback_holder::Callback for CustomEvent {
+impl EventCallback for CustomEvent {
     type Event = web_sys::Event;
 
     fn get_event_type(&self) -> String {
@@ -481,4 +481,11 @@ pub trait EventPropsReceiver {
     fn add_drag_event_listener(&mut self, callback: DragEvents);
     fn add_input_event_listener(&mut self, callback: InputEvents);
     fn add_focus_event_listeners(&mut self, callback: FocusEvents);
+}
+
+pub trait EventCallback {
+    type Event: JsCast + 'static;
+
+    fn get_event_type(&self) -> String;
+    fn get_callback(&self) -> &yew::Callback<Self::Event>;
 }
