@@ -175,7 +175,6 @@ pub enum AriaAttributes {
     AriaDisabled(bool),
 
     /// Indicates what functions can be performed when a dragged object is released on the drop target.
-    #[deprecated(since = "ARIA 1.1")]
     AriaDropeffect(AriaDropeffect),
 
     /// Identifies the element that provides an error message for the object.
@@ -191,7 +190,6 @@ pub enum AriaAttributes {
     AriaFlowto(String),
 
     /// Indicates an element's "grabbed" state in a drag-and-drop operation.
-    #[deprecated(since = "ARIA 1.1")]
     AriaGrabbed(bool),
 
     /// Indicates the availability and type of interactive popup element, such as menu or dialog, that can
