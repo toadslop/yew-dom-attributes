@@ -37,15 +37,9 @@ pub enum SVGAttributes {
     AlignmentBaseline(AlignmentBaseline),
     #[strum(serialize = "allowReorder")]
     AllowReorder(AllowReorder),
-    #[deprecated(
-        note = "See details: https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/alphabetic"
-    )]
     Alphabetic(NumberOrString),
     Amplitude(NumberOrString),
     ArabicForm(ArabicForm),
-    #[deprecated(
-        note = "See details: https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/ascent"
-    )]
     Ascent(NumberOrString),
     #[strum(serialize = "attributeName")]
     AttributeName(String),
