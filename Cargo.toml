@@ -4,11 +4,10 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-gloo-console = "0.2.1"
 gloo-events = "0.1.2"
 strum = {version = "0.24.1", features = ["strum_macros", "derive"]}
-wasm-bindgen = "0.2.82"
-web-sys = { version = "0.3.59", features = ["Element", "console"]}
+wasm-bindgen = { version = "0.2.82", features = []}
+web-sys = { version = "0.3.59", features = ["Element"]}
 yew = "0.19.3"
 domatt = { path = "../domatt" }
 
@@ -21,4 +20,13 @@ full = [
     "attribute_collection",
     "misc_attributes",
 ]
-default = ["aria_attributes", "attribute_collection", "misc_attributes"]
+# default = ["aria_attributes", "attribute_collection", "misc_attributes"]
+
+[profile.release]
+panic = 'abort'
+codegen-units = 1
+opt-level = 'z'
+lto = true
+
+[lib]
+crate-type = ["rlib", "cdylib"]

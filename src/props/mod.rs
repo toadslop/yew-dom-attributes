@@ -1,16 +1,13 @@
-use std::{collections::HashMap, rc::Rc};
-
-use gloo_events::EventListener;
-use wasm_bindgen::JsCast;
-use web_sys::Element;
-use yew::{Callback, Component, Context, NodeRef};
-
 use crate::events::events::{
     AnimationEvents, CustomEvent, DragEvents, EventType, FocusEvents, GenericEvents, InputEvents,
     KeyboardEvents, MouseEvents, PointerEvents, ProgressEvents, TouchEvents, TransitionEvents,
     WheelEvents,
 };
-
+use gloo_events::EventListener;
+use std::{collections::HashMap, rc::Rc};
+use wasm_bindgen::JsCast;
+use web_sys::Element;
+use yew::{Callback, Component, Context, NodeRef};
 pub mod aria_props;
 pub mod button_props;
 pub mod custom_attributes;
@@ -19,6 +16,9 @@ pub mod svg_props;
 // TODO: create builder classes that allow users to build props, step by step specifying the
 // capacity for each prop holder. That way they can prevent allocation for props that they
 // will never use.
+
+// Note to self: the details element has a toggle event. A special "add toggle event"
+// method needs to be added to it.
 
 mod private {
     use crate::events::events::EventType;
@@ -110,8 +110,6 @@ fn remove_listeners(
     listeners_to_remove: &mut Vec<String>,
 ) {
     while let Some(listener_key) = listeners_to_remove.pop() {
-        gloo_console::log!("Inside remove listener");
-        gloo_console::log!(listener_key.clone());
         match active_listeners.remove(&listener_key) {
             Some(listener) => drop(listener),
             None => (),
@@ -323,7 +321,6 @@ fn inject_listeners(
 ) {
     let mut listener_holder = HashMap::new();
     for (key, listener) in listeners_to_add.drain() {
-        gloo_console::log!(key.clone());
         let listener = match listener {
             EventType::MouseEvent(ev) => build_mouse_event(&elem, ev),
             EventType::Event(ev) => build_generic_event(&elem, ev),
