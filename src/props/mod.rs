@@ -3,7 +3,7 @@ use std::{collections::HashMap, rc::Rc};
 use gloo_events::EventListener;
 use wasm_bindgen::JsCast;
 use web_sys::Element;
-use yew::{Callback, NodeRef};
+use yew::{Callback, Component, Context, NodeRef};
 
 use crate::events::events::{
     AnimationEvents, CustomEvent, DragEvents, EventType, FocusEvents, GenericEvents, InputEvents,
@@ -44,20 +44,17 @@ pub trait DynamicListenerComponent {
 /// A trait to be implemented by any element that accepts listeners.
 /// Handles adding and removing listeners as well as injecting them to the DOM.
 pub trait DomInjector: private::ListenerGetterSetter + private::PropsGetterSetter {
-    fn new(on_props_update: Callback<Rc<Self>>) -> Self;
+    fn new<T: Component, F, R>(ctx: &Context<T>, func: F) -> Self
+    where
+        F: Fn(Rc<Self>) -> R + 'static,
+        T: yew::Component,
+        <T as yew::Component>::Message: std::convert::From<R>;
 
     fn add_listener(&mut self, key: String, event_type: EventType) {
-        gloo_console::log!("ADDING A LISTNER NOE");
-        gloo_console::log!(key.clone());
         self.get_listeners_to_add().insert(key, event_type);
     }
 
-    // update how we handle this: this structure will own the event listener
-    // this structure will destroy the listener
-    // possible problem: we want the listener to go when the element its attached
-    // to goes out of scope. but this will be owned by the parent.
     fn remove_listener(&mut self, key: String) {
-        gloo_console::log!("ADDING A LISTNER TO REMOVE");
         self.get_listeners_to_remove().push(key);
     }
 

@@ -1,6 +1,6 @@
 use domatt::{Attribute, ButtonHtmlAttributes};
 use std::{collections::HashMap, rc::Rc};
-use yew::{Callback, Properties};
+use yew::{Callback, Context, Properties};
 
 use crate::events::events::EventType;
 
@@ -62,7 +62,14 @@ impl HtmlElementPropsHandler for ButtonProps {}
 impl CustomPropsHandler for ButtonProps {}
 
 impl DomInjector for ButtonProps {
-    fn new(on_props_update: Callback<Rc<Self>>) -> Self {
+    fn new<T, F, R>(ctx: &Context<T>, func: F) -> Self
+    where
+        F: Fn(Rc<Self>) -> R + 'static,
+        T: yew::Component,
+        <T as yew::Component>::Message: std::convert::From<R>,
+    {
+        let on_props_update = ctx.link().callback(func);
+
         Self {
             attributes_to_add: HashMap::new(),
             attributes_to_remove: Vec::new(),
