@@ -10,7 +10,7 @@ strum = {version = "0.24.1", features = ["strum_macros", "derive"]}
 wasm-bindgen = "0.2.82"
 web-sys = { version = "0.3.59", features = ["Element", "console"]}
 yew = "0.19.3"
-domatt = { git = "https://github.com/toadslop/domatt" }
+domatt = { path = "../domatt" }
 
 [features]
 aria_attributes = []
