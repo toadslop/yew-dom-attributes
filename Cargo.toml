@@ -12,15 +12,35 @@ yew = "0.19.3"
 domatt = { path = "../domatt" }
 
 [features]
-aria_attributes = []
-attribute_collection = []
-misc_attributes = []
+events = []
+aria_props = ["events", "html_element_props"]
+attribute_collection = ["events"]
+anchor_props = ["events", "html_element_props", "aria_props", "custom_attributes"]
+html_element_props = ["events"]
+custom_attributes = []
+button_props = []
+custom_props = []
+svg_props = []
 full = [
-    "aria_attributes",
+    "aria_props",
     "attribute_collection",
-    "misc_attributes",
+    "anchor_props",
+    "events",
+    "custom_attributes",
+    "button_props",
+    "custom_props",
+    "svg_props"
 ]
-# default = ["aria_attributes", "attribute_collection", "misc_attributes"]
+default = [
+    "aria_props",
+    "attribute_collection",
+    "anchor_props",
+    "html_element_props",
+    "custom_attributes",
+    "button_props",
+    "custom_props",
+    "svg_props"
+    ]
 
 [profile.release]
 panic = 'abort'

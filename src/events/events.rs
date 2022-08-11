@@ -1,4 +1,4 @@
-use strum::Display;
+use strum::IntoStaticStr;
 use wasm_bindgen::JsCast;
 use web_sys::{
     AnimationEvent, DragEvent, FocusEvent, InputEvent, KeyboardEvent, MouseEvent, PointerEvent,
@@ -6,7 +6,7 @@ use web_sys::{
 };
 use yew::{html, Callback};
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, IntoStaticStr, PartialEq, Clone)]
 pub enum EventType {
     Event(GenericEvents),
     MouseEvent(MouseEvents),
@@ -23,7 +23,7 @@ pub enum EventType {
     CustomEvent(CustomEvent),
 }
 
-#[derive(Debug, PartialEq, Clone, Display)]
+#[derive(Debug, IntoStaticStr, PartialEq, Clone)]
 #[strum(serialize_all = "lowercase")]
 pub enum GenericEvents {
     Abort(Callback<html::onabort::Event>),
@@ -73,8 +73,8 @@ pub enum GenericEvents {
 impl EventCallback for GenericEvents {
     type Event = web_sys::Event;
 
-    fn get_event_type(&self) -> String {
-        self.to_string()
+    fn get_event_type(&self) -> &'static str {
+        self.into()
     }
 
     fn get_callback(&self) -> &yew::Callback<web_sys::Event> {
@@ -125,7 +125,7 @@ impl EventCallback for GenericEvents {
     }
 }
 
-#[derive(Debug, PartialEq, Clone, Display)]
+#[derive(Debug, IntoStaticStr, PartialEq, Clone)]
 #[strum(serialize_all = "lowercase")]
 pub enum MouseEvents {
     AuxClick(Callback<html::onauxclick::Event>),
@@ -144,8 +144,8 @@ pub enum MouseEvents {
 impl EventCallback for MouseEvents {
     type Event = MouseEvent;
 
-    fn get_event_type(&self) -> String {
-        self.to_string()
+    fn get_event_type(&self) -> &'static str {
+        self.into()
     }
 
     fn get_callback(&self) -> &yew::Callback<MouseEvent> {
@@ -164,7 +164,7 @@ impl EventCallback for MouseEvents {
         }
     }
 }
-#[derive(Debug, PartialEq, Clone, Display)]
+#[derive(Debug, IntoStaticStr, PartialEq, Clone)]
 #[strum(serialize_all = "lowercase")]
 pub enum FocusEvents {
     Blur(Callback<html::onblur::Event>),
@@ -177,8 +177,8 @@ pub enum FocusEvents {
 impl EventCallback for FocusEvents {
     type Event = FocusEvent;
 
-    fn get_event_type(&self) -> String {
-        self.to_string()
+    fn get_event_type(&self) -> &'static str {
+        self.into()
     }
 
     fn get_callback(&self) -> &yew::Callback<Self::Event> {
@@ -192,7 +192,7 @@ impl EventCallback for FocusEvents {
     }
 }
 
-#[derive(Debug, PartialEq, Clone, Display)]
+#[derive(Debug, IntoStaticStr, PartialEq, Clone)]
 #[strum(serialize_all = "lowercase")]
 pub enum DragEvents {
     Drag(Callback<html::ondrag::Event>),
@@ -208,8 +208,8 @@ pub enum DragEvents {
 impl EventCallback for DragEvents {
     type Event = DragEvent;
 
-    fn get_event_type(&self) -> String {
-        self.to_string()
+    fn get_event_type(&self) -> &'static str {
+        self.into()
     }
 
     fn get_callback(&self) -> &yew::Callback<Self::Event> {
@@ -226,7 +226,7 @@ impl EventCallback for DragEvents {
     }
 }
 
-#[derive(Debug, PartialEq, Clone, Display)]
+#[derive(Debug, IntoStaticStr, PartialEq, Clone)]
 #[strum(serialize_all = "lowercase")]
 pub enum InputEvents {
     Input(Callback<html::oninput::Event>),
@@ -235,8 +235,8 @@ pub enum InputEvents {
 impl EventCallback for InputEvents {
     type Event = InputEvent;
 
-    fn get_event_type(&self) -> String {
-        self.to_string()
+    fn get_event_type(&self) -> &'static str {
+        self.into()
     }
 
     fn get_callback(&self) -> &yew::Callback<Self::Event> {
@@ -246,7 +246,7 @@ impl EventCallback for InputEvents {
     }
 }
 
-#[derive(Debug, PartialEq, Clone, Display)]
+#[derive(Debug, IntoStaticStr, PartialEq, Clone)]
 #[strum(serialize_all = "lowercase")]
 pub enum KeyboardEvents {
     Keydown(Callback<html::onkeydown::Event>),
@@ -257,8 +257,8 @@ pub enum KeyboardEvents {
 impl EventCallback for KeyboardEvents {
     type Event = KeyboardEvent;
 
-    fn get_event_type(&self) -> String {
-        self.to_string()
+    fn get_event_type(&self) -> &'static str {
+        self.into()
     }
 
     fn get_callback(&self) -> &yew::Callback<Self::Event> {
@@ -270,7 +270,7 @@ impl EventCallback for KeyboardEvents {
     }
 }
 
-#[derive(Debug, PartialEq, Clone, Display)]
+#[derive(Debug, IntoStaticStr, PartialEq, Clone)]
 #[strum(serialize_all = "lowercase")]
 pub enum ProgressEvents {
     LoadStart(Callback<html::onloadstart::Event>),
@@ -281,8 +281,8 @@ pub enum ProgressEvents {
 impl EventCallback for ProgressEvents {
     type Event = ProgressEvent;
 
-    fn get_event_type(&self) -> String {
-        self.to_string()
+    fn get_event_type(&self) -> &'static str {
+        self.into()
     }
 
     fn get_callback(&self) -> &yew::Callback<Self::Event> {
@@ -294,7 +294,7 @@ impl EventCallback for ProgressEvents {
     }
 }
 
-#[derive(Debug, PartialEq, Clone, Display)]
+#[derive(Debug, IntoStaticStr, PartialEq, Clone)]
 #[strum(serialize_all = "lowercase")]
 pub enum WheelEvents {
     Wheel(Callback<html::onwheel::Event>),
@@ -303,8 +303,8 @@ pub enum WheelEvents {
 impl EventCallback for WheelEvents {
     type Event = WheelEvent;
 
-    fn get_event_type(&self) -> String {
-        self.to_string()
+    fn get_event_type(&self) -> &'static str {
+        self.into()
     }
 
     fn get_callback(&self) -> &yew::Callback<Self::Event> {
@@ -314,7 +314,7 @@ impl EventCallback for WheelEvents {
     }
 }
 
-#[derive(Debug, PartialEq, Clone, Display)]
+#[derive(Debug, IntoStaticStr, PartialEq, Clone)]
 #[strum(serialize_all = "lowercase")]
 pub enum AnimationEvents {
     AnimationCancel(Callback<html::onanimationcancel::Event>),
@@ -326,8 +326,8 @@ pub enum AnimationEvents {
 impl EventCallback for AnimationEvents {
     type Event = AnimationEvent;
 
-    fn get_event_type(&self) -> String {
-        self.to_string()
+    fn get_event_type(&self) -> &'static str {
+        self.into()
     }
 
     fn get_callback(&self) -> &yew::Callback<Self::Event> {
@@ -340,7 +340,7 @@ impl EventCallback for AnimationEvents {
     }
 }
 
-#[derive(Debug, PartialEq, Clone, Display)]
+#[derive(Debug, IntoStaticStr, PartialEq, Clone)]
 #[strum(serialize_all = "lowercase")]
 pub enum PointerEvents {
     GotPointerCapture(Callback<html::ongotpointercapture::Event>),
@@ -358,8 +358,8 @@ pub enum PointerEvents {
 impl EventCallback for PointerEvents {
     type Event = PointerEvent;
 
-    fn get_event_type(&self) -> String {
-        self.to_string()
+    fn get_event_type(&self) -> &'static str {
+        self.into()
     }
 
     fn get_callback(&self) -> &yew::Callback<Self::Event> {
@@ -378,7 +378,7 @@ impl EventCallback for PointerEvents {
     }
 }
 
-#[derive(Debug, PartialEq, Clone, Display)]
+#[derive(Debug, IntoStaticStr, PartialEq, Clone)]
 #[strum(serialize_all = "lowercase")]
 pub enum TouchEvents {
     TouchCancel(Callback<html::ontouchcancel::Event>),
@@ -390,8 +390,8 @@ pub enum TouchEvents {
 impl EventCallback for TouchEvents {
     type Event = TouchEvent;
 
-    fn get_event_type(&self) -> String {
-        self.to_string()
+    fn get_event_type(&self) -> &'static str {
+        self.into()
     }
 
     fn get_callback(&self) -> &yew::Callback<Self::Event> {
@@ -404,7 +404,7 @@ impl EventCallback for TouchEvents {
     }
 }
 
-#[derive(Debug, PartialEq, Clone, Display)]
+#[derive(Debug, IntoStaticStr, PartialEq, Clone)]
 #[strum(serialize_all = "lowercase")]
 pub enum TransitionEvents {
     TransitionCancel(Callback<html::ontransitioncancel::Event>),
@@ -416,8 +416,8 @@ pub enum TransitionEvents {
 impl EventCallback for TransitionEvents {
     type Event = TransitionEvent;
 
-    fn get_event_type(&self) -> String {
-        self.to_string()
+    fn get_event_type(&self) -> &'static str {
+        self.into()
     }
 
     fn get_callback(&self) -> &yew::Callback<Self::Event> {
@@ -432,12 +432,12 @@ impl EventCallback for TransitionEvents {
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct CustomEvent {
-    event_type: String,
+    event_type: &'static str,
     callback: yew::Callback<web_sys::Event>,
 }
 
 impl CustomEvent {
-    pub fn get_event_type(&self) -> String {
+    pub fn get_event_type(&self) -> &'static str {
         self.event_type.clone()
     }
 
@@ -447,7 +447,7 @@ impl CustomEvent {
 }
 
 impl CustomEvent {
-    pub fn new(event_type: String, callback: yew::Callback<web_sys::Event>) -> Self {
+    pub fn new(event_type: &'static str, callback: yew::Callback<web_sys::Event>) -> Self {
         Self {
             event_type,
             callback,
@@ -458,8 +458,8 @@ impl CustomEvent {
 impl EventCallback for CustomEvent {
     type Event = web_sys::Event;
 
-    fn get_event_type(&self) -> String {
-        self.event_type.to_owned()
+    fn get_event_type(&self) -> &'static str {
+        self.event_type
     }
 
     fn get_callback(&self) -> &yew::Callback<Self::Event> {
@@ -486,6 +486,6 @@ pub trait EventPropsReceiver {
 pub trait EventCallback {
     type Event: JsCast + 'static;
 
-    fn get_event_type(&self) -> String;
+    fn get_event_type(&self) -> &'static str;
     fn get_callback(&self) -> &yew::Callback<Self::Event>;
 }
