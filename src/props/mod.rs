@@ -48,7 +48,7 @@ mod private {
 }
 
 pub trait DynamicListenerComponent {
-    fn get_listeners(&self) -> &mut HashMap<String, EventListener>;
+    fn get_listeners(&self) -> &mut HashMap<String, Rc<EventListener>>;
 }
 
 /// A trait to be implemented by any element that accepts listeners.
@@ -68,11 +68,7 @@ pub trait DomInjector: private::ListenerGetterSetter + private::PropsGetterSette
         self.get_listeners_to_remove().push(key);
     }
 
-    fn get_listener_to_add_count(&mut self) -> usize {
-        self.get_listeners_to_add().len()
-    }
-
-    /// This function returns a callback that takes the props struct itelf. This is used
+    /// This function returns a callback that takes the props struct itself. This is used
     /// to pass changes to props struct from the child back up to the parent.
     /// This is necessary to inform the parent that attributes and listeners were either
     /// added or removed from the DOM. If this is not used properly, your component will
@@ -84,7 +80,7 @@ pub trait DomInjector: private::ListenerGetterSetter + private::PropsGetterSette
     fn inject(
         &mut self,
         node_ref: &NodeRef,
-        active_listeners: &mut HashMap<String, EventListener>,
+        active_listeners: &mut HashMap<String, Rc<EventListener>>,
     ) {
         if let Some(elem) = node_ref.cast::<Element>() {
             let listeners_to_remove = self.get_listeners_to_remove();
@@ -116,7 +112,7 @@ fn remove_attributes(elem: &Element, attributes_to_remove: &mut Vec<String>) {
 }
 
 fn remove_listeners(
-    active_listeners: &mut HashMap<String, EventListener>,
+    active_listeners: &mut HashMap<String, Rc<EventListener>>,
     listeners_to_remove: &mut Vec<String>,
 ) {
     while let Some(listener_key) = listeners_to_remove.pop() {
@@ -351,7 +347,7 @@ fn build_custom_event(elem: &Element, ev: CustomEvent) -> EventListener {
 
 fn inject_listeners(
     elem: &Element,
-    active_listeners: &mut HashMap<String, EventListener>,
+    active_listeners: &mut HashMap<String, Rc<EventListener>>,
     listeners_to_add: &mut HashMap<String, EventType>,
 ) {
     let mut listener_holder = HashMap::new();
@@ -371,7 +367,7 @@ fn inject_listeners(
             EventType::TransitionEvent(ev) => build_transition_event(&elem, ev),
             EventType::CustomEvent(ev) => build_custom_event(&elem, ev),
         };
-        listener_holder.insert(key, listener);
+        listener_holder.insert(key, Rc::new(listener));
     }
     active_listeners.extend(listener_holder);
 }
