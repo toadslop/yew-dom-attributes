@@ -39,7 +39,7 @@ mod private {
 }
 
 pub trait DynamicListenerComponent {
-    fn get_listeners(&self) -> &mut HashMap<String, EventListener>;
+    fn get_listeners(&self) -> &mut HashMap<String, Rc<EventListener>>;
 }
 
 /// A trait to be implemented by any element that accepts listeners.
@@ -71,7 +71,7 @@ pub trait DomInjector: private::ListenerGetterSetter + private::PropsGetterSette
     fn inject(
         &mut self,
         node_ref: &NodeRef,
-        active_listeners: &mut HashMap<String, Rc<EventListener>>,
+        active_listeners: &mut HashMap<String, Rc<Rc<EventListener>>>,
     ) {
         if let Some(elem) = node_ref.cast::<Element>() {
             let listeners_to_remove = self.get_listeners_to_remove();
@@ -101,7 +101,7 @@ fn inject_attributes(
 }
 
 fn remove_listeners(
-    active_listeners: &mut HashMap<String, Rc<EventListener>>,
+    active_listeners: &mut HashMap<String, Rc<Rc<EventListener>>>,
     listeners_to_remove: &mut Vec<String>,
 ) {
     while let Some(listener_key) = listeners_to_remove.pop() {
@@ -115,8 +115,9 @@ fn remove_listeners(
 fn build_event_listener<TEvent: JsCast + 'static>(
     elem: &Element,
     cb: Callback<TEvent>,
-    event_type: String,
+    event_type: &'static str,
 ) -> EventListener {
+    let cb = cb.clone();
     EventListener::new(&elem, event_type, move |e| {
         let event = e.clone();
         cb.emit(event.dyn_into::<TEvent>().unwrap())
@@ -124,8 +125,7 @@ fn build_event_listener<TEvent: JsCast + 'static>(
 }
 
 fn build_mouse_event(elem: &Element, ev: MouseEvents) -> EventListener {
-    let event_type = ev.to_string();
-    let cb = match ev {
+    let cb = match &ev {
         MouseEvents::AuxClick(cb) => cb,
         MouseEvents::Click(cb) => cb,
         MouseEvents::ContextMenu(cb) => cb,
@@ -137,13 +137,15 @@ fn build_mouse_event(elem: &Element, ev: MouseEvents) -> EventListener {
         MouseEvents::MouseOut(cb) => cb,
         MouseEvents::MouseOver(cb) => cb,
         MouseEvents::MouseUp(cb) => cb,
-    };
+    }
+    .clone();
+    let event_type: &'static str = ev.into();
+
     build_event_listener(elem, cb, event_type)
 }
 
 fn build_generic_event(elem: &Element, ev: GenericEvents) -> EventListener {
-    let event_type = ev.to_string();
-    let cb = match ev {
+    let cb = match &ev {
         GenericEvents::Abort(cb) => cb,
         GenericEvents::Cancel(cb) => cb,
         GenericEvents::CanPlay(cb) => cb,
@@ -186,36 +188,42 @@ fn build_generic_event(elem: &Element, ev: GenericEvents) -> EventListener {
         GenericEvents::Show(cb) => cb,
         GenericEvents::PointerLockChange(cb) => cb,
         GenericEvents::PointerLockError(cb) => cb,
-    };
+    }
+    .clone();
+    let event_type = ev.into();
+
     build_event_listener(elem, cb, event_type)
 }
 
 fn build_touch_event(elem: &Element, ev: TouchEvents) -> EventListener {
-    let event_type = ev.to_string();
-    let cb = match ev {
+    let cb = match &ev {
         TouchEvents::TouchCancel(cb) => cb,
         TouchEvents::TouchEnd(cb) => cb,
         TouchEvents::TouchMove(cb) => cb,
         TouchEvents::TouchStart(cb) => cb,
-    };
+    }
+    .clone();
+    let event_type = ev.into();
+
     build_event_listener(elem, cb, event_type)
 }
 
 fn build_focus_event(elem: &Element, ev: FocusEvents) -> EventListener {
-    let event_type = ev.to_string();
-    let cb = match ev {
+    let cb = match &ev {
         FocusEvents::Blur(cb) => cb,
         FocusEvents::Focus(cb) => cb,
         FocusEvents::FocusIn(cb) => cb,
         FocusEvents::FocusOut(cb) => cb,
         FocusEvents::Submit(cb) => cb,
-    };
+    }
+    .clone();
+    let event_type = ev.into();
+
     build_event_listener(elem, cb, event_type)
 }
 
 fn build_drag_event(elem: &Element, ev: DragEvents) -> EventListener {
-    let event_type = ev.to_string();
-    let cb = match ev {
+    let cb = match &ev {
         DragEvents::Drag(cb) => cb,
         DragEvents::DragEnd(cb) => cb,
         DragEvents::DragEnter(cb) => cb,
@@ -224,60 +232,72 @@ fn build_drag_event(elem: &Element, ev: DragEvents) -> EventListener {
         DragEvents::DragOver(cb) => cb,
         DragEvents::DragStart(cb) => cb,
         DragEvents::Drop(cb) => cb,
-    };
+    }
+    .clone();
+    let event_type = ev.into();
+
     build_event_listener(elem, cb, event_type)
 }
 
 fn build_input_event(elem: &Element, ev: InputEvents) -> EventListener {
-    let event_type = ev.to_string();
-    let cb = match ev {
+    let cb = match &ev {
         InputEvents::Input(cb) => cb,
-    };
+    }
+    .clone();
+    let event_type = ev.into();
+
     build_event_listener(elem, cb, event_type)
 }
 
 fn build_keyboard_event(elem: &Element, ev: KeyboardEvents) -> EventListener {
-    let event_type = ev.to_string();
-    let cb = match ev {
+    let cb = match &ev {
         KeyboardEvents::Keydown(cb) => cb,
         KeyboardEvents::KeyPress(cb) => cb,
         KeyboardEvents::KeyUp(cb) => cb,
-    };
+    }
+    .clone();
+    let event_type = ev.into();
+
     build_event_listener(elem, cb, event_type)
 }
 
 fn build_progress_event(elem: &Element, ev: ProgressEvents) -> EventListener {
-    let event_type = ev.to_string();
-    let cb = match ev {
+    let cb = match &ev {
         ProgressEvents::LoadStart(cb) => cb,
         ProgressEvents::Progress(cb) => cb,
         ProgressEvents::Loadend(cb) => cb,
-    };
+    }
+    .clone();
+    let event_type = ev.into();
+
     build_event_listener(elem, cb, event_type)
 }
 
 fn build_wheel_event(elem: &Element, ev: WheelEvents) -> EventListener {
-    let event_type = ev.to_string();
-    let cb = match ev {
+    let cb = match &ev {
         WheelEvents::Wheel(cb) => cb,
-    };
+    }
+    .clone();
+    let event_type = ev.into();
+
     build_event_listener(elem, cb, event_type)
 }
 
 fn build_animation_event(elem: &Element, ev: AnimationEvents) -> EventListener {
-    let event_type = ev.to_string();
-    let cb = match ev {
+    let cb = match &ev {
         AnimationEvents::AnimationCancel(cb) => cb,
         AnimationEvents::AnimationEnd(cb) => cb,
         AnimationEvents::AnimationIteration(cb) => cb,
         AnimationEvents::AnimationStart(cb) => cb,
-    };
+    }
+    .clone();
+    let event_type = ev.into();
+
     build_event_listener(elem, cb, event_type)
 }
 
 fn build_pointer_event(elem: &Element, ev: PointerEvents) -> EventListener {
-    let event_type = ev.to_string();
-    let cb = match ev {
+    let cb = match &ev {
         PointerEvents::GotPointerCapture(cb) => cb,
         PointerEvents::LostPointerCapture(cb) => cb,
         PointerEvents::PointerCancel(cb) => cb,
@@ -288,30 +308,35 @@ fn build_pointer_event(elem: &Element, ev: PointerEvents) -> EventListener {
         PointerEvents::PointerOut(cb) => cb,
         PointerEvents::PointerOver(cb) => cb,
         PointerEvents::PointerUp(cb) => cb,
-    };
+    }
+    .clone();
+    let event_type = ev.into();
+
     build_event_listener(elem, cb, event_type)
 }
 
 fn build_transition_event(elem: &Element, ev: TransitionEvents) -> EventListener {
-    let event_type = ev.to_string();
-    let cb = match ev {
+    let cb = match &ev {
         TransitionEvents::TransitionCancel(cb) => cb,
         TransitionEvents::TransitionEnd(cb) => cb,
         TransitionEvents::TransitionRun(cb) => cb,
         TransitionEvents::TransitionStart(cb) => cb,
-    };
+    }
+    .clone();
+    let event_type = ev.into();
+
     build_event_listener(elem, cb, event_type)
 }
 
 fn build_custom_event(elem: &Element, ev: CustomEvent) -> EventListener {
     let event_type = ev.get_event_type();
-    let cb = ev.get_callback();
+    let cb = ev.get_callback().clone();
     build_event_listener(elem, cb, event_type)
 }
 
 fn inject_listeners(
     elem: &Element,
-    active_listeners: &mut HashMap<String, Rc<EventListener>>,
+    active_listeners: &mut HashMap<String, Rc<Rc<EventListener>>>,
     listeners_to_add: &mut HashMap<String, EventType>,
 ) {
     let mut listener_holder = HashMap::new();
@@ -331,7 +356,7 @@ fn inject_listeners(
             EventType::TransitionEvent(ev) => build_transition_event(&elem, ev),
             EventType::CustomEvent(ev) => build_custom_event(&elem, ev),
         };
-        listener_holder.insert(key, Rc::new(listener));
+        listener_holder.insert(key, Rc::new(Rc::new(listener)));
     }
     active_listeners.extend(listener_holder);
 }
