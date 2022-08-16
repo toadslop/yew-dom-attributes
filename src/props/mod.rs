@@ -3,16 +3,17 @@ use crate::events::events::{
     KeyboardEvents, MouseEvents, PointerEvents, ProgressEvents, TouchEvents, TransitionEvents,
     WheelEvents,
 };
+
 use gloo_events::EventListener;
 use std::{collections::HashMap, rc::Rc};
 use wasm_bindgen::JsCast;
 use web_sys::Element;
+
 use yew::{Callback, Component, Context, NodeRef};
-pub mod aria_props;
 pub mod button_props;
-pub mod custom_attributes;
-pub mod html_element_props;
+pub mod global_props;
 pub mod svg_props;
+
 // TODO: create builder classes that allow users to build props, step by step specifying the
 // capacity for each prop holder. That way they can prevent allocation for props that they
 // will never use.
@@ -24,10 +25,10 @@ mod private {
     use crate::events::events::EventType;
     use std::collections::HashMap;
 
-    pub trait PropsGetterSetter {
-        fn get_props_to_add(&mut self) -> &mut HashMap<String, Option<String>>;
+    use super::ProcessAction;
 
-        fn get_props_to_remove(&mut self) -> &mut Vec<String>;
+    pub trait PropsGetterSetter {
+        fn get_attributes(&mut self) -> &mut Vec<(ProcessAction, String, Option<String>)>;
     }
 
     pub trait ListenerGetterSetter {
@@ -58,10 +59,6 @@ pub trait DomInjector: private::ListenerGetterSetter + private::PropsGetterSette
         self.get_listeners_to_remove().push(key);
     }
 
-    fn get_listener_to_add_count(&mut self) -> usize {
-        self.get_listeners_to_add().len()
-    }
-
     /// This function returns a callback that takes the props struct itelf. This is used
     /// to pass changes to props struct from the child back up to the parent.
     /// This is necessary to inform the parent that attributes and listeners were either
@@ -74,7 +71,7 @@ pub trait DomInjector: private::ListenerGetterSetter + private::PropsGetterSette
     fn inject(
         &mut self,
         node_ref: &NodeRef,
-        active_listeners: &mut HashMap<String, EventListener>,
+        active_listeners: &mut HashMap<String, Rc<EventListener>>,
     ) {
         if let Some(elem) = node_ref.cast::<Element>() {
             let listeners_to_remove = self.get_listeners_to_remove();
@@ -83,30 +80,28 @@ pub trait DomInjector: private::ListenerGetterSetter + private::PropsGetterSette
             let listeners_to_add = self.get_listeners_to_add();
             inject_listeners(&elem, active_listeners, listeners_to_add);
 
-            let attributes_to_remove = self.get_props_to_remove();
-            remove_attributes(&elem, attributes_to_remove);
-
-            let attributes_to_add = self.get_props_to_add();
-            inject_attributes(&elem, attributes_to_add);
+            let attributes = self.get_attributes();
+            inject_attributes(&elem, attributes)
         }
     }
 }
 
-fn inject_attributes(elem: &Element, attributes_to_add: &mut HashMap<String, Option<String>>) {
-    for (key, value) in attributes_to_add.drain() {
-        elem.set_attribute(&key, &value.unwrap_or_default())
-            .unwrap();
-    }
-}
-
-fn remove_attributes(elem: &Element, attributes_to_remove: &mut Vec<String>) {
-    while let Some(key) = attributes_to_remove.pop() {
-        elem.remove_attribute(&key).unwrap();
+fn inject_attributes(
+    elem: &Element,
+    attributes: &mut Vec<(ProcessAction, String, Option<String>)>,
+) {
+    for (action, key, value) in attributes.drain(..) {
+        match action {
+            ProcessAction::Add => elem
+                .set_attribute(&key, &value.unwrap_or_default())
+                .unwrap(),
+            ProcessAction::Remove => elem.remove_attribute(&key).unwrap(),
+        }
     }
 }
 
 fn remove_listeners(
-    active_listeners: &mut HashMap<String, EventListener>,
+    active_listeners: &mut HashMap<String, Rc<EventListener>>,
     listeners_to_remove: &mut Vec<String>,
 ) {
     while let Some(listener_key) = listeners_to_remove.pop() {
@@ -316,7 +311,7 @@ fn build_custom_event(elem: &Element, ev: CustomEvent) -> EventListener {
 
 fn inject_listeners(
     elem: &Element,
-    active_listeners: &mut HashMap<String, EventListener>,
+    active_listeners: &mut HashMap<String, Rc<EventListener>>,
     listeners_to_add: &mut HashMap<String, EventType>,
 ) {
     let mut listener_holder = HashMap::new();
@@ -336,7 +331,85 @@ fn inject_listeners(
             EventType::TransitionEvent(ev) => build_transition_event(&elem, ev),
             EventType::CustomEvent(ev) => build_custom_event(&elem, ev),
         };
-        listener_holder.insert(key, listener);
+        listener_holder.insert(key, Rc::new(listener));
     }
     active_listeners.extend(listener_holder);
 }
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum ProcessAction {
+    Add,
+    Remove,
+}
+
+macro_rules! prop_handler {
+    ($name:ident, $attr_type:ident ) => {
+        #[derive(Debug, Properties, PartialEq, Clone)]
+        pub struct $name {
+            attributes: Vec<(ProcessAction, String, Option<String>)>,
+            listeners_to_add: HashMap<String, EventType>,
+            listeners_to_remove: Vec<String>,
+            /// A callback used to pass changes to button props from the child back up to the parent.
+            /// This is necessary to inform the parent that attributes and listeners were either
+            /// added or removed from the DOM. If this is not used properly, your component will
+            /// not know that it happened and will try again on the next rerender.
+            on_props_update: Callback<Rc<$name>>,
+        }
+
+        impl $name {
+            pub fn add_attribute(&mut self, attribute: Box<dyn $attr_type>) {
+                let action = ProcessAction::Add;
+                let key = String::from(attribute.get_key());
+                let val = attribute.get_val().map(String::from);
+                self.attributes.push((action, key, val))
+            }
+
+            pub fn remove_attribute(&mut self, attribute: Box<dyn $attr_type>) {
+                let action = ProcessAction::Remove;
+                let key = String::from(attribute.get_key());
+                let val = attribute.get_val().map(String::from);
+                self.attributes.push((action, key, val))
+            }
+        }
+
+        impl super::private::PropsGetterSetter for $name {
+            fn get_attributes(&mut self) -> &mut Vec<(ProcessAction, String, Option<String>)> {
+                &mut self.attributes
+            }
+        }
+
+        impl super::private::ListenerGetterSetter for $name {
+            fn get_listeners_to_add(&mut self) -> &mut HashMap<String, EventType> {
+                &mut self.listeners_to_add
+            }
+
+            fn get_listeners_to_remove(&mut self) -> &mut Vec<String> {
+                &mut self.listeners_to_remove
+            }
+        }
+
+        impl DomInjector for $name {
+            fn new<T, F, R>(ctx: &Context<T>, func: F) -> Self
+            where
+                F: Fn(Rc<Self>) -> R + 'static,
+                T: yew::Component,
+                <T as yew::Component>::Message: std::convert::From<R>,
+            {
+                let on_props_update = ctx.link().callback(func);
+
+                Self {
+                    attributes: Vec::new(),
+                    listeners_to_add: HashMap::new(),
+                    listeners_to_remove: Vec::new(),
+                    on_props_update,
+                }
+            }
+
+            fn get_props_update_callback(&self) -> &Callback<Rc<Self>> {
+                &self.on_props_update
+            }
+        }
+    };
+}
+
+pub(crate) use prop_handler;
