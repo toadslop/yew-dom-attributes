@@ -71,7 +71,7 @@ pub trait DomInjector: private::ListenerGetterSetter + private::PropsGetterSette
     fn inject(
         &mut self,
         node_ref: &NodeRef,
-        active_listeners: &mut HashMap<String, Rc<Rc<EventListener>>>,
+        active_listeners: &mut HashMap<String, Rc<EventListener>>,
     ) {
         if let Some(elem) = node_ref.cast::<Element>() {
             let listeners_to_remove = self.get_listeners_to_remove();
@@ -101,7 +101,7 @@ fn inject_attributes(
 }
 
 fn remove_listeners(
-    active_listeners: &mut HashMap<String, Rc<Rc<EventListener>>>,
+    active_listeners: &mut HashMap<String, Rc<EventListener>>,
     listeners_to_remove: &mut Vec<String>,
 ) {
     while let Some(listener_key) = listeners_to_remove.pop() {
@@ -336,7 +336,7 @@ fn build_custom_event(elem: &Element, ev: CustomEvent) -> EventListener {
 
 fn inject_listeners(
     elem: &Element,
-    active_listeners: &mut HashMap<String, Rc<Rc<EventListener>>>,
+    active_listeners: &mut HashMap<String, Rc<EventListener>>,
     listeners_to_add: &mut HashMap<String, EventType>,
 ) {
     let mut listener_holder = HashMap::new();
@@ -356,7 +356,7 @@ fn inject_listeners(
             EventType::TransitionEvent(ev) => build_transition_event(&elem, ev),
             EventType::CustomEvent(ev) => build_custom_event(&elem, ev),
         };
-        listener_holder.insert(key, Rc::new(Rc::new(listener)));
+        listener_holder.insert(key, Rc::new(listener));
     }
     active_listeners.extend(listener_holder);
 }
