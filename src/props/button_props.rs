@@ -1,6 +1,6 @@
 use super::{prop_handler, DomInjector, ProcessAction};
 use crate::events::events::EventType;
-use domatt::button::ButtonAttribute;
+use domatt::attributes::button::ButtonAttribute;
 use std::{collections::HashMap, rc::Rc};
 use yew::{Callback, Context, Properties};
 
