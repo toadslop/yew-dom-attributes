@@ -18,12 +18,8 @@ mod private {
     }
 
     pub trait ListenerGetterSetter {
-        fn get_listeners(&mut self) -> &mut Vec<(ProcessAction, String, Rc<dyn Event>)>;
+        fn get_listeners(&mut self) -> &mut Vec<(ProcessAction, String, Option<Rc<dyn Event>>)>;
     }
-}
-
-pub trait DynamicListenerComponent {
-    fn get_listeners(&self) -> &mut HashMap<String, Rc<EventListener>>;
 }
 
 /// A trait to be implemented by any element that accepts listeners.
@@ -77,12 +73,14 @@ use domatt::events::Event;
 fn inject_listeners(
     elem: &Element,
     active_listeners: &mut HashMap<String, Rc<EventListener>>,
-    listeners: &mut Vec<(ProcessAction, String, Rc<dyn Event>)>,
+    listeners: &mut Vec<(ProcessAction, String, Option<Rc<dyn Event>>)>,
 ) {
     let mut listener_holder = HashMap::new();
     for (action, listener_id, event) in listeners.drain(..) {
         match action {
             ProcessAction::Add => {
+                let event = event
+                    .expect("there to be an event. This is a logic error and a bug in the code.");
                 let event_type = event.get_event_type().to_owned();
                 let cb = event.get_callback();
                 let listener = EventListener::new(elem, event_type, move |ev| (*cb)(ev));
@@ -107,7 +105,7 @@ macro_rules! prop_handler {
         #[derive(Debug, Properties, PartialEq, Clone)]
         pub struct $name {
             attributes: Vec<(ProcessAction, String, Option<String>)>,
-            listeners: Vec<(ProcessAction, String, Rc<dyn Event>)>,
+            listeners: Vec<(ProcessAction, String, Option<Rc<dyn Event>>)>,
             /// A callback used to pass changes to button props from the child back up to the parent.
             /// This is necessary to inform the parent that attributes and listeners were either
             /// added or removed from the DOM. If this is not used properly, your component will
@@ -123,21 +121,19 @@ macro_rules! prop_handler {
                 self.attributes.push((action, key, val))
             }
 
-            pub fn remove_attribute(&mut self, attribute: Box<dyn $attr_type>) {
+            pub fn remove_attribute(&mut self, key: &str) {
                 let action = ProcessAction::Remove;
-                let key = String::from(attribute.get_key());
-                let val = attribute.get_val().map(String::from);
-                self.attributes.push((action, key, val))
+                self.attributes.push((action, key.to_owned(), None))
             }
 
             pub fn add_listener(&mut self, id: &str, event: Rc<dyn Event>) {
                 let action = ProcessAction::Add;
-                self.listeners.push((action, id.to_owned(), event))
+                self.listeners.push((action, id.to_owned(), Some(event)))
             }
 
-            pub fn remove_listener(&mut self, id: &str, event: Rc<dyn Event>) {
+            pub fn remove_listener(&mut self, id: String) {
                 let action = ProcessAction::Remove;
-                self.listeners.push((action, id.to_owned(), event))
+                self.listeners.push((action, id.to_owned(), None))
             }
         }
 
@@ -148,7 +144,9 @@ macro_rules! prop_handler {
         }
 
         impl super::private::ListenerGetterSetter for $name {
-            fn get_listeners(&mut self) -> &mut Vec<(ProcessAction, String, Rc<dyn Event>)> {
+            fn get_listeners(
+                &mut self,
+            ) -> &mut Vec<(ProcessAction, String, Option<Rc<dyn Event>>)> {
                 &mut self.listeners
             }
         }
