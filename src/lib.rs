@@ -1,3 +1,4 @@
+use domatt::events::Event;
 use gloo_events::EventListener;
 use std::{collections::HashMap, rc::Rc};
 use web_sys::Element;
@@ -69,7 +70,6 @@ fn inject_attributes(
     }
 }
 
-use domatt::events::Event;
 fn inject_listeners(
     elem: &Element,
     active_listeners: &mut HashMap<String, Rc<EventListener>>,
