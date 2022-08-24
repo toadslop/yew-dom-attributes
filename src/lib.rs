@@ -27,9 +27,7 @@ mod private {
 /// Handles adding and removing listeners as well as injecting them to the DOM.
 pub trait DomInjector: private::ListenerGetterSetter + private::PropsGetterSetter {
     /// Creates a simple new DOM injector instance.
-    fn new<T: Component>() -> Self
-    where
-        T: yew::Component;
+    fn new() -> Self;
 
     /// This function is used when you need to dynamically update the props using events.
     /// Once the changes to the props are complete, this will return the updated props,
@@ -164,10 +162,7 @@ macro_rules! prop_handler {
         }
 
         impl DomInjector for $name {
-            fn new<T>() -> Self
-            where
-                T: yew::Component,
-            {
+            fn new() -> Self {
                 Self {
                     attributes: Vec::new(),
                     listeners: Vec::new(),
