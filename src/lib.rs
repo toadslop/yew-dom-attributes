@@ -26,7 +26,15 @@ mod private {
 /// A trait to be implemented by any element that accepts listeners.
 /// Handles adding and removing listeners as well as injecting them to the DOM.
 pub trait DomInjector: private::ListenerGetterSetter + private::PropsGetterSetter {
-    fn new<T: Component, F, R>(ctx: &Context<T>, func: F) -> Self
+    /// Creates a simple new DOM injector instance.
+    fn new<T: Component>() -> Self
+    where
+        T: yew::Component;
+
+    /// This function is used when you need to dynamically update the props using events.
+    /// Once the changes to the props are complete, this will return the updated props,
+    /// which you can store as state inside the component that created the props instance.
+    fn with_update_callback<T: Component, F, R>(ctx: &Context<T>, func: F) -> Self
     where
         F: Fn(Rc<Self>) -> R + 'static,
         T: yew::Component,
@@ -37,7 +45,7 @@ pub trait DomInjector: private::ListenerGetterSetter + private::PropsGetterSette
     /// This is necessary to inform the parent that attributes and listeners were either
     /// added or removed from the DOM. If this is not used properly, your component will
     /// not know that it happened and will try again on the next rerender.
-    fn get_props_update_callback(&self) -> &Callback<Rc<Self>>;
+    fn get_props_update_callback(&self) -> Option<&Callback<Rc<Self>>>;
 
     /// The active_listeners parameter should be stored in the host Component so the listeners it contained will be
     /// dropped when that Component is destroyed.
@@ -45,13 +53,15 @@ pub trait DomInjector: private::ListenerGetterSetter + private::PropsGetterSette
         &mut self,
         node_ref: &NodeRef,
         active_listeners: &mut HashMap<String, Rc<EventListener>>,
-    ) {
+    ) where
+        Self: Sized,
+    {
         if let Some(elem) = node_ref.cast::<Element>() {
             let listeners = self.get_listeners();
             inject_listeners(&elem, active_listeners, listeners);
 
             let attributes = self.get_attributes();
-            inject_attributes(&elem, attributes)
+            inject_attributes(&elem, attributes);
         }
     }
 }
@@ -64,8 +74,10 @@ fn inject_attributes(
         match action {
             ProcessAction::Add => elem
                 .set_attribute(&key, &value.unwrap_or_default())
-                .unwrap(),
-            ProcessAction::Remove => elem.remove_attribute(&key).unwrap(),
+                .expect("that there should be no problem adding the attribute."),
+            ProcessAction::Remove => elem
+                .remove_attribute(&key)
+                .expect("that there should be no problem removing the attribute"),
         }
     }
 }
@@ -110,7 +122,7 @@ macro_rules! prop_handler {
             /// This is necessary to inform the parent that attributes and listeners were either
             /// added or removed from the DOM. If this is not used properly, your component will
             /// not know that it happened and will try again on the next rerender.
-            on_props_update: Callback<Rc<$name>>,
+            on_props_update: Option<Callback<Rc<$name>>>,
         }
 
         impl $name {
@@ -152,13 +164,24 @@ macro_rules! prop_handler {
         }
 
         impl DomInjector for $name {
-            fn new<T, F, R>(ctx: &Context<T>, func: F) -> Self
+            fn new<T>() -> Self
+            where
+                T: yew::Component,
+            {
+                Self {
+                    attributes: Vec::new(),
+                    listeners: Vec::new(),
+                    on_props_update: None,
+                }
+            }
+
+            fn with_update_callback<T, F, R>(ctx: &Context<T>, func: F) -> Self
             where
                 F: Fn(Rc<Self>) -> R + 'static,
                 T: yew::Component,
                 <T as yew::Component>::Message: std::convert::From<R>,
             {
-                let on_props_update = ctx.link().callback(func);
+                let on_props_update = Some(ctx.link().callback(func));
 
                 Self {
                     attributes: Vec::new(),
@@ -167,8 +190,12 @@ macro_rules! prop_handler {
                 }
             }
 
-            fn get_props_update_callback(&self) -> &Callback<Rc<Self>> {
-                &self.on_props_update
+            fn get_props_update_callback(&self) -> Option<&Callback<Rc<Self>>> {
+                if let Some(cb) = &self.on_props_update {
+                    Some(cb)
+                } else {
+                    None
+                }
             }
         }
     };
