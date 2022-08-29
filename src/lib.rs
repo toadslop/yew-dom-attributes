@@ -10,16 +10,15 @@ pub mod global_props;
 pub mod svg_props;
 
 mod private {
-    use super::ProcessAction;
     use domatt::events::Event;
-    use std::rc::Rc;
+    use std::{collections::HashMap, rc::Rc};
 
     pub trait PropsGetterSetter {
-        fn get_attributes(&mut self) -> &mut Vec<(ProcessAction, String, Option<String>)>;
+        fn get_attributes(&mut self) -> &mut HashMap<String, Option<String>>;
     }
 
     pub trait ListenerGetterSetter {
-        fn get_listeners(&mut self) -> &mut Vec<(ProcessAction, String, Option<Rc<dyn Event>>)>;
+        fn get_listeners(&mut self) -> &mut HashMap<String, Option<Rc<dyn Event>>>;
     }
 }
 
@@ -55,67 +54,58 @@ pub trait DomInjector: private::ListenerGetterSetter + private::PropsGetterSette
         Self: Sized,
     {
         if let Some(elem) = node_ref.cast::<Element>() {
-            let listeners = self.get_listeners();
-            inject_listeners(&elem, active_listeners, listeners);
-
             let attributes = self.get_attributes();
             inject_attributes(&elem, attributes);
+
+            let listeners = self.get_listeners();
+            inject_listeners(&elem, active_listeners, listeners);
         }
     }
 }
 
-fn inject_attributes(
-    elem: &Element,
-    attributes: &mut Vec<(ProcessAction, String, Option<String>)>,
-) {
-    for (action, key, value) in attributes.drain(..) {
-        match action {
-            ProcessAction::Add => elem
-                .set_attribute(&key, &value.unwrap_or_default())
-                .expect("that there should be no problem adding the attribute."),
-            ProcessAction::Remove => elem
-                .remove_attribute(&key)
-                .expect("that there should be no problem removing the attribute"),
+fn inject_attributes(elem: &Element, attributes: &mut HashMap<String, Option<String>>) {
+    for attr_name in elem.get_attribute_names().iter() {
+        let name = &attr_name
+            .as_string()
+            .expect("an attribute name to be representable as a string");
+        if name != "class" {
+            elem.remove_attribute(name)
+                .expect("removing an attribute to be successful");
         }
+    }
+    for (key, value) in attributes.drain() {
+        elem.set_attribute(key.as_ref(), &value.unwrap_or_default())
+            .expect("that there should be no problem adding the attribute.")
     }
 }
 
 fn inject_listeners(
     elem: &Element,
     active_listeners: &mut HashMap<String, Rc<EventListener>>,
-    listeners: &mut Vec<(ProcessAction, String, Option<Rc<dyn Event>>)>,
+    listeners: &mut HashMap<String, Option<Rc<dyn Event>>>,
 ) {
     let mut listener_holder = HashMap::new();
-    for (action, listener_id, event) in listeners.drain(..) {
-        match action {
-            ProcessAction::Add => {
-                let event = event
-                    .expect("there to be an event. This is a logic error and a bug in the code.");
-                let event_type = event.get_event_type().to_owned();
-                let cb = event.get_callback();
-                let listener = EventListener::new(elem, event_type, move |ev| (*cb)(ev));
-                listener_holder.insert(listener_id, Rc::new(listener));
-            }
-            ProcessAction::Remove => {
-                active_listeners.remove(&listener_id);
-            }
-        };
+    for (_id, listener) in active_listeners.drain() {
+        drop(listener);
+    }
+
+    for (listener_id, event) in listeners.drain() {
+        let event =
+            event.expect("there to be an event. This is a logic error and a bug in the code.");
+        let event_type = event.get_event_type().to_owned();
+        let cb = event.get_callback();
+        let listener = EventListener::new(elem, event_type, move |ev| (*cb)(ev));
+        listener_holder.insert(listener_id, Rc::new(listener));
     }
     active_listeners.extend(listener_holder);
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub enum ProcessAction {
-    Add,
-    Remove,
 }
 
 macro_rules! prop_handler {
     ($name:ident, $attr_type:ident ) => {
         #[derive(Debug, Properties, PartialEq, Clone)]
         pub struct $name {
-            attributes: Vec<(ProcessAction, String, Option<String>)>,
-            listeners: Vec<(ProcessAction, String, Option<Rc<dyn Event>>)>,
+            attributes: HashMap<String, Option<String>>,
+            listeners: HashMap<String, Option<Rc<dyn Event>>>,
             /// A callback used to pass changes to button props from the child back up to the parent.
             /// This is necessary to inform the parent that attributes and listeners were either
             /// added or removed from the DOM. If this is not used properly, your component will
@@ -125,38 +115,36 @@ macro_rules! prop_handler {
 
         impl $name {
             pub fn add_attribute(&mut self, attribute: Box<dyn $attr_type>) {
-                let action = ProcessAction::Add;
-                let key = String::from(attribute.get_key());
+                let key = attribute.get_key().to_owned();
                 let val = attribute.get_val().map(String::from);
-                self.attributes.push((action, key, val))
+                self.attributes.insert(key, val);
             }
 
             pub fn remove_attribute(&mut self, key: &str) {
-                let action = ProcessAction::Remove;
-                self.attributes.push((action, key.to_owned(), None))
+                self.attributes.remove(key);
+            }
+
+            pub fn has_attribute(&self, key: &str) -> bool {
+                self.attributes.contains_key(key)
             }
 
             pub fn add_listener(&mut self, id: &str, event: Rc<dyn Event>) {
-                let action = ProcessAction::Add;
-                self.listeners.push((action, id.to_owned(), Some(event)))
+                self.listeners.insert(id.to_owned(), Some(event));
             }
 
             pub fn remove_listener(&mut self, id: String) {
-                let action = ProcessAction::Remove;
-                self.listeners.push((action, id.to_owned(), None))
+                self.listeners.remove(&id);
             }
         }
 
         impl super::private::PropsGetterSetter for $name {
-            fn get_attributes(&mut self) -> &mut Vec<(ProcessAction, String, Option<String>)> {
+            fn get_attributes(&mut self) -> &mut HashMap<String, Option<String>> {
                 &mut self.attributes
             }
         }
 
         impl super::private::ListenerGetterSetter for $name {
-            fn get_listeners(
-                &mut self,
-            ) -> &mut Vec<(ProcessAction, String, Option<Rc<dyn Event>>)> {
+            fn get_listeners(&mut self) -> &mut HashMap<String, Option<Rc<dyn Event>>> {
                 &mut self.listeners
             }
         }
@@ -164,8 +152,8 @@ macro_rules! prop_handler {
         impl DomInjector for $name {
             fn new() -> Self {
                 Self {
-                    attributes: Vec::new(),
-                    listeners: Vec::new(),
+                    attributes: HashMap::new(),
+                    listeners: HashMap::new(),
                     on_props_update: None,
                 }
             }
@@ -179,8 +167,8 @@ macro_rules! prop_handler {
                 let on_props_update = Some(ctx.link().callback(func));
 
                 Self {
-                    attributes: Vec::new(),
-                    listeners: Vec::new(),
+                    attributes: HashMap::new(),
+                    listeners: HashMap::new(),
                     on_props_update,
                 }
             }

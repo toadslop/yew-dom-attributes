@@ -10,6 +10,7 @@ wasm-bindgen = { version = "0.2.82", features = []}
 web-sys = { version = "0.3.59", features = ["Element"]}
 yew = "0.19.3"
 domatt = { path = "../domatt" }
+gloo-console = "0.2.3"
 
 [features]
 events = []
