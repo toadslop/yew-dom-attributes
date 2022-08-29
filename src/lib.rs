@@ -2,7 +2,7 @@ use domatt::events::Event;
 use gloo_events::EventListener;
 use std::{collections::HashMap, rc::Rc};
 use web_sys::Element;
-use yew::{Callback, Component, Context, NodeRef};
+use yew::{Callback, NodeRef};
 
 pub mod anchor_props;
 pub mod button_props;
@@ -27,15 +27,6 @@ mod private {
 pub trait DomInjector: private::ListenerGetterSetter + private::PropsGetterSetter {
     /// Creates a simple new DOM injector instance.
     fn new() -> Self;
-
-    /// This function is used when you need to dynamically update the props using events.
-    /// Once the changes to the props are complete, this will return the updated props,
-    /// which you can store as state inside the component that created the props instance.
-    fn with_update_callback<T: Component, F, R>(ctx: &Context<T>, func: F) -> Self
-    where
-        F: Fn(Rc<Self>) -> R + 'static,
-        T: yew::Component,
-        <T as yew::Component>::Message: std::convert::From<R>;
 
     /// This function returns a callback that takes the props struct itelf. This is used
     /// to pass changes to props struct from the child back up to the parent.
@@ -155,21 +146,6 @@ macro_rules! prop_handler {
                     attributes: HashMap::new(),
                     listeners: HashMap::new(),
                     on_props_update: None,
-                }
-            }
-
-            fn with_update_callback<T, F, R>(ctx: &Context<T>, func: F) -> Self
-            where
-                F: Fn(Rc<Self>) -> R + 'static,
-                T: yew::Component,
-                <T as yew::Component>::Message: std::convert::From<R>,
-            {
-                let on_props_update = Some(ctx.link().callback(func));
-
-                Self {
-                    attributes: HashMap::new(),
-                    listeners: HashMap::new(),
-                    on_props_update,
                 }
             }
 
