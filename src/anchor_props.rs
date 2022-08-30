@@ -3,6 +3,6 @@ use domatt::attributes::anchor::AnchorAttribute;
 use domatt::events::Event;
 use std::collections::HashMap;
 use std::rc::Rc;
-use yew::{Callback, Properties};
+use yew::Properties;
 
 prop_handler!(AnchorProps, AnchorAttribute);
