@@ -109,6 +109,15 @@ macro_rules! prop_handler {
                 self.attributes.contains_key(key)
             }
 
+            pub fn has_event_type(&self, key: &str) -> bool {
+                for (_, event) in self.listeners.iter() {
+                    if event.get_event_type() == key {
+                        return true;
+                    };
+                }
+                false
+            }
+
             pub fn get_attribute(&self, key: &str) -> Option<&String> {
                 match self.attributes.get(key) {
                     Some(attr) => attr.as_ref().map(|val| val),
