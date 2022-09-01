@@ -89,18 +89,31 @@ macro_rules! prop_handler {
         }
 
         impl $name {
-            pub fn add_attribute(&mut self, attribute: Box<dyn $attr_type>) {
+            pub fn add_attribute(&mut self, attribute: Box<dyn $attr_type>) -> Option<String> {
                 let key = attribute.get_key().to_owned();
                 let val = attribute.get_val().map(String::from);
-                self.attributes.insert(key, val);
+                match self.attributes.insert(key, val) {
+                    Some(attr) => attr,
+                    None => None,
+                }
             }
 
-            pub fn remove_attribute(&mut self, key: &str) {
-                self.attributes.remove(key);
+            pub fn remove_attribute(&mut self, key: &str) -> Option<String> {
+                match self.attributes.remove(key) {
+                    Some(attr) => attr,
+                    None => None,
+                }
             }
 
             pub fn has_attribute(&self, key: &str) -> bool {
                 self.attributes.contains_key(key)
+            }
+
+            pub fn get_attribute(&self, key: &str) -> Option<&String> {
+                match self.attributes.get(key) {
+                    Some(attr) => attr.as_ref().map(|val| val),
+                    None => None,
+                }
             }
 
             pub fn add_listener(&mut self, id: &str, event: Rc<dyn Event>) {
