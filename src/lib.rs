@@ -110,13 +110,17 @@ pub enum ProcessAction {
     Remove,
 }
 
+// TODO: update this to actually store the attributes as their original type OR when getting, return it as its original type
+// TODO: make it possible to view/modify the props as their passed down through the tree.
+// currently, items can be added, but once their in it becomes a black box
+
 macro_rules! prop_handler {
     ($name:ident, $attr_type:ident ) => {
         #[derive(Debug, Properties, PartialEq, Clone)]
         pub struct $name {
             attributes: Vec<(ProcessAction, String, Option<String>)>,
             listeners: Vec<(ProcessAction, String, Option<Rc<dyn Event>>)>,
-            /// A callback used to pass changes to button props from the child back up to the parent.
+            /// A callback used to pass changes to props from the child back up to the parent.
             /// This is necessary to inform the parent that attributes and listeners were either
             /// added or removed from the DOM. If this is not used properly, your component will
             /// not know that it happened and will try again on the next rerender.
