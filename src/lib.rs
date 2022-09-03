@@ -82,10 +82,10 @@ fn inject_listeners(
 
 macro_rules! prop_handler {
     ($name:ident, $attr_type:ident ) => {
-        #[derive(Debug, Properties, PartialEq, Clone)]
+        #[derive(Debug, yew::Properties, PartialEq, Clone)]
         pub struct $name {
-            attributes: HashMap<String, Option<String>>,
-            listeners: HashMap<String, Rc<dyn Event>>,
+            attributes: std::collections::HashMap<String, Option<String>>,
+            listeners: std::collections::HashMap<String, std::rc::Rc<dyn domatt::events::Event>>,
         }
 
         impl $name {
@@ -125,23 +125,45 @@ macro_rules! prop_handler {
                 }
             }
 
-            pub fn add_listener(&mut self, id: &str, event: Rc<dyn Event>) {
+            pub fn add_listener(
+                &mut self,
+                id: &str,
+                event: std::rc::Rc<dyn domatt::events::Event>,
+            ) {
                 self.listeners.insert(id.to_owned(), event);
             }
 
             pub fn remove_listener(&mut self, id: String) {
                 self.listeners.remove(&id);
             }
+
+            pub fn drain_attributes(
+                &mut self,
+            ) -> std::collections::hash_map::Drain<'_, String, Option<String>> {
+                self.attributes.drain()
+            }
+
+            pub fn drain_listeners(
+                &mut self,
+            ) -> std::collections::hash_map::Drain<
+                '_,
+                std::string::String,
+                std::rc::Rc<(dyn domatt::events::Event + 'static)>,
+            > {
+                self.listeners.drain()
+            }
         }
 
         impl super::private::PropsGetterSetter for $name {
-            fn get_attributes(&self) -> &HashMap<String, Option<String>> {
+            fn get_attributes(&self) -> &std::collections::HashMap<String, Option<String>> {
                 &self.attributes
             }
         }
 
         impl super::private::ListenerGetterSetter for $name {
-            fn get_listeners(&self) -> &HashMap<String, Rc<dyn Event>> {
+            fn get_listeners(
+                &self,
+            ) -> &std::collections::HashMap<String, std::rc::Rc<dyn domatt::events::Event>> {
                 &self.listeners
             }
         }
@@ -149,8 +171,8 @@ macro_rules! prop_handler {
         impl DomInjector for $name {
             fn new() -> Self {
                 Self {
-                    attributes: HashMap::new(),
-                    listeners: HashMap::new(),
+                    attributes: std::collections::HashMap::new(),
+                    listeners: std::collections::HashMap::new(),
                 }
             }
         }
@@ -158,3 +180,27 @@ macro_rules! prop_handler {
 }
 
 pub(crate) use prop_handler;
+
+macro_rules! from_global {
+    ($name:ident) => {
+        impl From<crate::global_props::GlobalProps> for $name {
+            fn from(mut global_props: crate::global_props::GlobalProps) -> Self {
+                let mut into_props = $name::new();
+
+                for (key, value) in global_props.drain_attributes() {
+                    into_props.add_attribute(Box::new(
+                        domatt::attributes::global::CustomAttribute::new(key.as_str(), value),
+                    ));
+                }
+
+                for (id, event) in global_props.drain_listeners() {
+                    into_props.add_listener(&id, event)
+                }
+
+                into_props
+            }
+        }
+    };
+}
+
+pub(crate) use from_global;
