@@ -7,6 +7,7 @@ use yew::NodeRef;
 pub mod anchor_props;
 pub mod button_props;
 pub mod global_props;
+pub mod li_props;
 pub mod svg_props;
 
 mod private {

@@ -7,13 +7,13 @@ edition = "2021"
 gloo-events = "0.1.2"
 strum = {version = "0.24.1", features = ["strum_macros", "derive"]}
 wasm-bindgen = { version = "0.2.82", features = []}
-web-sys = { version = "0.3.59", features = ["Element"]}
+web-sys = { version = "0.3.59", features = ["Element", "TouchEvent"]}
 yew = "0.19.3"
-domatt = { path = "../domatt" }
+domatt = { path = "../domatt", features = ["full", "yew"] }
 gloo-console = "0.2.3"
 
 [features]
-events = []
+events = ["web-sys/TouchEvent"]
 aria_props = ["events", "html_element_props"]
 attribute_collection = ["events"]
 anchor_props = ["events", "html_element_props", "aria_props", "custom_attributes"]
